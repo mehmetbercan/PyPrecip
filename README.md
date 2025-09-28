@@ -1,8 +1,8 @@
-# pyprecip
+# PyPrecip
 
 ![License: Research-Only](https://img.shields.io/badge/license-Research--Only-orange)
 
-`pyprecip` is a Python library for downloading, processing, and building AI models for precipitation **nowcasting** and **forecasting**.  
+`PyPrecip` is a Python library for downloading, processing, and building AI models for precipitation **nowcasting** and **forecasting**.  
 It starts with **station-based precipitation** and will later include **radar-based precipitation**.
 
 ---
@@ -16,11 +16,28 @@ It starts with **station-based precipitation** and will later include **radar-ba
 
 ---
 
-## Quickstart (future)
 
-```bash
-# install from source
+## How to install and run
+From the project root (where `pyproject.toml` resides):
+```bash 
 pip install -e .
+```
+## Command-line interface (CLI) usage: 
 
-# run command-line interface (to be implemented)
-pyprecip --help
+### 1) Organize raw data  
+```bash 
+pyprecip organize -c examples/configs/organizer_example.yaml 
+``` 
+
+### 2) Create event-based training inputs  
+```bash 
+pyprecip create-training -c examples/configs/create_training_example.yaml  
+```
+
+### 3) Train CNN  
+```bash 
+pyprecip train -c examples/configs/train_example.yaml  
+```
+
+
+
