@@ -1,0 +1,21 @@
+stations: [19088, 18352, 18186]
+target_station: 19088
+feature_cols: ["cum_pcp", "pcp_mm", "rhum", "tmp", "rhum_diff", "tmp_diff", "tmp_diff_roll10h", "rhum_diff_roll10h", "cum_hour"]
+train_col: "cum_pcp"
+inputs_dir: "outputs/training_inputs"
+model_dir: "outputs/models/cnn/v1"
+batch_size: 256
+epochs: 500
+patience: 10000
+hidden_units: 64
+
+# Optional custom class intervals
+class_intervals:
+  - [0, 2]
+  - [2, 5]
+  - [5, 8]
+  - [8, 12]
+  - [12, 18]
+  - [18, 25]
+  - [25, 32]
+  - [32, 160]

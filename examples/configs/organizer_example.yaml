@@ -1,0 +1,3 @@
+mgm_hourly_folder: "D:/MGM_Data/hourly"
+outputs_dir: "outputs/organized"
+# Optionally override filenames if different

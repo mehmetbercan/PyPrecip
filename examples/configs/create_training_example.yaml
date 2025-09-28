@@ -1,0 +1,16 @@
+stations: [19088, 18352, 18186]
+organized_dir: "outputs/organized"
+out_dir: "outputs/training_inputs"
+short_cols: ["pcp","rhum","tmp"]
+cols: ["precip","rhum","tmp"]
+
+min_precip_mm: 0
+max_precip_mm: 50
+min_tmp_c: -30
+max_tmp_c: 50
+min_rhum_pct: 0
+max_rhum_pct: 100
+
+mit_cold_hours: 1
+mit_warm_hours: 2
+global_event_buffer_hours: 1
