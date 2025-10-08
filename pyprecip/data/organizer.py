@@ -1,60 +1,56 @@
 import os
 import numpy as np
 import pandas as pd
-from ..io.mgm_reader import read_mgm_text, read_mgm_excel
+from ..io.TRdata_reader import read_mgm
 
-class StationOrganizer:
+class StationOrganizerTR:
+    # Turkish State Meteorological Service data organizer
     def __init__(self, cfg):
         self.cfg = cfg
         self.out_dir = cfg.outputs_dir
+        self.ranges = cfg.ranges
         os.makedirs(self.out_dir, exist_ok=True)
 
     def run(self):
-        # Read core text sources
-        df_precip, _ = read_mgm_text(os.path.join(self.cfg.mgm_hourly_folder, self.cfg.prp_file),
-                                     column='TOPLAM_YAGIS_OMGI_mm', is_windspeed=False)
-        df_tmp, _ = read_mgm_text(os.path.join(self.cfg.mgm_hourly_folder, self.cfg.tmp_file),
-                                  column='SICAKLIK_?C', is_windspeed=False)
-        df_wndsp, df_wnddir = read_mgm_text(os.path.join(self.cfg.mgm_hourly_folder, self.cfg.wnd_file),
-                                            column='RUZGAR_YONU_VE_HIZI', is_windspeed=True)
-        df_mxwndsp, _ = read_mgm_text(os.path.join(self.cfg.mgm_hourly_folder, self.cfg.maxwnd_file),
-                                      column='SAATLIK_MAKSIMUM_RUZGARIN_YONU_VE_HIZI', is_windspeed=True)
-        df_pressure, _ = read_mgm_text(os.path.join(self.cfg.mgm_hourly_folder, self.cfg.pressure_file),
-                                       column='AKTUEL_BASINC_hPa', is_windspeed=False)
-        df_rhum, _ = read_mgm_text(os.path.join(self.cfg.mgm_hourly_folder, self.cfg.rhum_file),
-                                   column='NISPI_NEM_%', is_windspeed=False)
-
-        # Excel->DataFrame JSON-like readers
-        def _load_excel(fname): return read_mgm_excel(os.path.join(self.cfg.mgm_hourly_folder, fname))
-        df_radsum = _load_excel(self.cfg.radsum_file)
-        df_rad = _load_excel(self.cfg.rad_file)
-        df_insolationintensity = _load_excel(self.cfg.insolationintensity_file)
-        df_insolationtime = _load_excel(self.cfg.insolationtime_file)
-        df_minsoiltmp0cm = _load_excel(self.cfg.minsoiltmp0cm_file)
-        df_soiltmp100cm = _load_excel(self.cfg.soiltmp100cm_file)
-        df_soiltmp50cm = _load_excel(self.cfg.soiltmp50cm_file)
-        df_soiltmp20cm = _load_excel(self.cfg.soiltmp20cm_file)
-        df_soiltmp10cm = _load_excel(self.cfg.soiltmp10cm_file)
-        df_soiltmp5cm = _load_excel(self.cfg.soiltmp5cm_file)
-
-        # Manual QA/QC (adapted from your script)
-        df_radsum = df_radsum[df_radsum<70000]
-        df_rad = df_rad[df_rad<1200]
-        df_insolationintensity = df_insolationintensity[df_insolationintensity<110]
-        df_soiltmp100cm = df_soiltmp100cm[df_soiltmp100cm>4]
-        df_soiltmp50cm = df_soiltmp50cm[df_soiltmp50cm>2]
+        # Reads Turkish State Meteorological Service excel or text format data
+        df_precip, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.pcp_file,
+                             self.cfg.pcp_column, is_windspeed=False)
+        df_tmp, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.tmp_file,
+                             self.cfg.tmp_column, is_windspeed=False)
+        df_wndsp, df_wnddir = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.wnd_file,
+                             self.cfg.wnd_column, is_windspeed=True)
+        df_mxwndsp, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.maxwnd_file,
+                             self.cfg.maxwnd_column, is_windspeed=True)
+        df_pressure, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.pressure_file,
+                             self.cfg.pressure_column, is_windspeed=False)
+        df_rhum, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.rhum_file,
+                             self.cfg.rhum_column, is_windspeed=False)
+        df_radsum, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.radsum_file,
+                             self.cfg.radsum_column, is_windspeed=False)
+        df_rad, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.rad_file,
+                             self.cfg.rad_column, is_windspeed=False)
+        df_insolationintensity, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.insolationintensity_file,
+                             self.cfg.insolationintensity_column, is_windspeed=False)
+        df_insolationtime, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.insolationtime_file,
+                             self.cfg.insolationtime_column, is_windspeed=False)
+        df_minsoiltmp0cm, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.minsoiltmp0cm_file,
+                             self.cfg.minsoiltmp0cm_column, is_windspeed=False)
+        df_soiltmp100cm, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.soiltmp100cm_file,
+                             self.cfg.soiltmp100cm_column, is_windspeed=False)
+        df_soiltmp50cm, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.soiltmp50cm_file,
+                             self.cfg.soiltmp50cm_column, is_windspeed=False)
+        df_soiltmp20cm, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.soiltmp20cm_file,
+                             self.cfg.soiltmp20cm_column, is_windspeed=False)
+        df_soiltmp10cm, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.soiltmp10cm_file,
+                             self.cfg.soiltmp10cm_column, is_windspeed=False)
+        df_soiltmp5cm, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.soiltmp5cm_file,
+                             self.cfg.soiltmp5cm_column, is_windspeed=False)
 
         # Ranges
-        ranges = dict(
-            precip=(0,50), tmp=(-30,50), wndsp=(0,30), mxwndsp=(0,50),
-            wnddir=(1,17), pressure=(700,1100), rhum=(0,100),
-            radsum=(0,70000), rad=(0,1200), insolationintensity=(0,100),
-            insolationtime=(0,1), minsoiltmp0cm=(-30,55), soiltmp100cm=(0,35),
-            soiltmp50cm=(0,40), soiltmp20cm=(-5,50), soiltmp10cm=(-10,55),
-            soiltmp5cm=(-10,65)
-        )
-
+        ranges = {k: tuple(v) for k, v in self.ranges.items()}
+        # Ranges
         stations = [int(c) for c in df_precip.columns]
+
         for station in stations:
             st = self._build_station_dataframe(
                 station,

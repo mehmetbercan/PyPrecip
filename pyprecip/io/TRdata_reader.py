@@ -1,16 +1,13 @@
 import pandas as pd
 import numpy as np
 import json
+import os
 from typing import Tuple, Union
 
 def read_mgm_text(txtfile: str, column: str, is_windspeed: bool=False) -> Union[Tuple[pd.DataFrame, str], Tuple[pd.DataFrame, pd.DataFrame]]:
-    df = pd.read_csv(
-        txtfile,
-        parse_dates=[[2,3,4,5]],
-        index_col=0,
-        date_format="%Y %m %d %H",
-        sep='|'
-    )
+    # Reads Turkish State Meteorological Service text format data
+    df = pd.read_csv(txtfile, parse_dates=[[2,3,4,5]], index_col=0,
+                     date_format="%Y %m %d %H", sep='|')
     df.index.name = 'DateTime'
     stations = df['Istasyon_No'].unique()
 
@@ -34,10 +31,10 @@ def read_mgm_text(txtfile: str, column: str, is_windspeed: bool=False) -> Union[
             _v = df[[column]].loc[df['Istasyon_No'] == station]
             _v.columns = [f'{station}']
             df_stn = pd.concat([df_stn, _v], axis=1)
-        return df_stn, 'Not Wind Speed'
+        return df_stn, pd.DataFrame()
 
 def read_mgm_excel(io: str) -> pd.DataFrame:
-    # Your original ReadMGMexcel, slightly cleaned.
+    # Reads Turkish State Meteorological Service excel format data
     df_excel = pd.read_excel(io)
     indeces = []; values = []; df = pd.DataFrame()
     pre_gageid = 'na'; gageid = 'na'
@@ -78,3 +75,19 @@ def read_mgm_excel(io: str) -> pd.DataFrame:
     df.index = pd.date_range(start=df.index.min()+pd.Timedelta(3, "h"),
                              end=df.index.max()+pd.Timedelta(3, "h"), freq='1h')
     return df
+
+def read_mgm(folder: str, filename: str, column: str, is_windspeed: bool=False):
+    # Reads Turkish State Meteorological Service excel or text format data
+    df_wd = pd.DataFrame()
+    if filename:
+        if filename.split('.')[-1] == 'txt':
+            df, df_wd = read_mgm_text(os.path.join(folder, filename),column, is_windspeed=is_windspeed)
+        elif filename.split('.')[-1] == 'xlsx':
+            df = read_mgm_excel(os.path.join(folder, filename))
+        else:
+            raise ValueError("{} file extension must be in .txt or .xlsx".format(filename))
+    else:
+        df = pd.DataFrame()
+
+    return df, df_wd
+

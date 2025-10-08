@@ -1,0 +1,1 @@
+# The data here is not the real MGM (Turkish Meterogical Instutition) data. It only has the same format that MGM provides.

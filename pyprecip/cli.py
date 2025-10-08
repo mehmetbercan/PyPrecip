@@ -1,7 +1,7 @@
 import click
 from .version import __version__
 from .config import load_yaml, OrganizerConfig, CreateTrainingConfig, TrainConfig
-from .data.organizer import StationOrganizer
+from .data.organizer import StationOrganizerTR
 from .data.events import TrainingDataCreator
 from .modeling.cnn import train_cnn
 
@@ -10,12 +10,12 @@ from .modeling.cnn import train_cnn
 def main():
     """PyPrecip CLI"""
 
-@main.command("organize")
+@main.command("organizeTRstate")
 @click.option("-c", "--config", type=click.Path(exists=True), required=True, help="YAML config for organizer.")
 def organize_cmd(config):
     """Organize raw MGM inputs into per-station JSON + normalized JSON."""
     cfg = load_yaml(config, OrganizerConfig)
-    StationOrganizer(cfg).run()
+    StationOrganizerTR(cfg).run()
     click.echo("Organization completed.")
 
 @main.command("create-training")
@@ -37,3 +37,6 @@ def train_cmd(config):
     for k, v in metrics.items():
         if k != "ConfusionMatrix":
             click.echo(f"- {k}: {v:.3f}")
+
+if __name__ == "__main__":
+    main()

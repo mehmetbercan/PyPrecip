@@ -1,29 +1,46 @@
 import yaml
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Dict, Tuple
 
 @dataclass
 class OrganizerConfig:
     mgm_hourly_folder: str
-    outputs_dir: str = "outputs/organized"
-    # file names can be overridden in YAML
-    prp_file: str = "20240604C169-Saatlik Toplam Yağış (mm=kg÷m²) OMGİ.txt"
-    tmp_file: str = "20240604C169-Saatlik Sıcaklık (°C).txt"
-    wnd_file: str = "20240604C169-Saatlik Rüzgar Yönü ve Hızı (m÷sn).txt"
-    maxwnd_file: str = "20240604C169-Saatlik Maksimum Rüzgarın hizı ve yönü (m÷sn).txt"
-    rhum_file: str = "20240604C169-Saatlik Nispi Nem (%) .txt"
-    pressure_file: str = "20240604C169-Saatlik Aktüel Basınç (hPa).txt"
-    # Excel files (converted to JSON externally or via reader)
-    radsum_file: str = "20240604C169-Saatlik Toplam Küresel Güneş Radyasyonu (watt÷m²).xlsx"
-    rad_file: str = "20240604C169-Saatlik Küresel Güneş Radyasyonu (wattsaat÷m²).xlsx"
-    insolationintensity_file: str = "20240604C169-Saatlik Güneşlenme Şiddeti (cal÷cm²).xlsx"
-    insolationtime_file: str = "20240604C169-Saatlik Güneşlenme Süresi (saat).xlsx"
-    minsoiltmp0cm_file: str = "20240604C169-Saatlik Toprak Üstü Minimum Sıcaklık (°C).xlsx"
-    soiltmp100cm_file: str = "20240604C169-Saatlik 100 cm Toprak Sıcaklığı (°C).xlsx"
-    soiltmp50cm_file: str = "20240604C169-Saatlik 50 cm Toprak Sıcaklığı (°C).xlsx"
-    soiltmp20cm_file: str = "20240604C169-Saatlik 20 cm Toprak Sıcaklığı (°C).xlsx"
-    soiltmp10cm_file: str = "20240604C169-Saatlik 10 cm Toprak Sıcaklığı (°C).xlsx"
-    soiltmp5cm_file: str = "20240604C169-Saatlik 5 cm Toprak Sıcaklığı (°C).xlsx"
+    outputs_dir: str
+    ranges: Dict[str, Tuple[float, float]]
+    # file names can be defined in YAML (eg. organizer_example_4TRstate.yaml)
+    pcp_file:  str
+    pcp_column:  str
+    tmp_file: Optional[str] = None
+    tmp_column: Optional[str] = None
+    wnd_file: Optional[str] = None
+    wnd_column: Optional[str] = None
+    maxwnd_file: Optional[str] = None
+    maxwnd_column: Optional[str] = None
+    rhum_file: Optional[str] = None
+    rhum_column: Optional[str] = None
+    pressure_file: Optional[str] = None
+    pressure_column: Optional[str] = None
+    # Excel files (converted to JSON)
+    radsum_file: Optional[str] = None
+    radsum_column: Optional[str] = None
+    rad_file: Optional[str] = None
+    rad_column: Optional[str] = None
+    insolationintensity_file: Optional[str] = None
+    insolationintensity_column: Optional[str] = None
+    insolationtime_file: Optional[str] = None
+    insolationtime_column: Optional[str] = None
+    minsoiltmp0cm_file: Optional[str] = None
+    minsoiltmp0cm_column: Optional[str] = None
+    soiltmp100cm_file: Optional[str] = None
+    soiltmp100cm_column: Optional[str] = None
+    soiltmp50cm_file: Optional[str] = None
+    soiltmp50cm_column: Optional[str] = None
+    soiltmp20cm_file: Optional[str] = None
+    soiltmp20cm_column: Optional[str] = None
+    soiltmp10cm_file: Optional[str] = None
+    soiltmp10cm_column: Optional[str] = None
+    soiltmp5cm_file: Optional[str] = None
+    soiltmp5cm_column: Optional[str] = None
 
 @dataclass
 class CreateTrainingConfig:

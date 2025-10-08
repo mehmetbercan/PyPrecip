@@ -1,0 +1,34 @@
+mgm_hourly_folder: "D:/PROJECTS/PyPrecip/examples/inputs/MGM_hourly"
+outputs_dir: "D:/PROJECTS/PyPrecip/examples/outputs/organized"
+# =====================================================================================
+# Optionally define filenames and column name (always together)
+# =====================================================================================
+# These files can be defined: pcp_file, tmp_file, wnd_file,maxwnd_file,rhum_file,
+## pressure_file,radsum_file,rad_file,insolationintensity_file,insolationtime_file,
+## minsoiltmp0cm_file,soiltmp100cm_file,soiltmp50cm_file,soiltmp20cm_file,
+## soiltmp10cm_file,soiltmp5cm_file
+# =====================================================================================
+pcp_file: "MGM_Test-Saatlik Toplam Yağış (mm=kg÷m²) OMGİ.txt" #precip must be defined.  if you do not have pcp_file, you can use other files for this variable and ignore pcp output
+pcp_column: 'TOPLAM_YAGIS_OMGI_mm'
+insolationtime_file: "MGM_Test-Saatlik Güneşlenme Süresi (saat).xlsx"
+insolationtime_column: 'NA' # Column name should be defined but not needed for xlsx files
+# =====================================================================================
+# Change Minimum and Maximum Limits (ranges) accordingly for the variable files you added above
+ranges:
+  precip: [0, 50]
+  tmp: [-30, 50]
+  wndsp: [0, 30]
+  mxwndsp: [0, 50]
+  wnddir: [1, 17]
+  pressure: [700, 1100]
+  rhum: [0, 100]
+  radsum: [0, 70000]
+  rad: [0, 1200]
+  insolationintensity: [0, 100]
+  insolationtime: [0, 1]
+  minsoiltmp0cm: [-30, 55]
+  soiltmp100cm: [0, 35]
+  soiltmp50cm: [0, 40]
+  soiltmp20cm: [-5, 50]
+  soiltmp10cm: [-10, 55]
+  soiltmp5cm: [-10, 65]

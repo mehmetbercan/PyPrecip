@@ -26,7 +26,7 @@ pip install -e .
 
 ### 1) Organize raw data  
 ```bash 
-pyprecip organize -c examples/configs/organizer_example.yaml 
+pyprecip organizeTRstate -c examples/configs/organizer_example_4TRstate.yaml 
 ``` 
 
 ### 2) Create event-based training inputs  
