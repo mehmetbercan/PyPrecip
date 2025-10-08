@@ -13,7 +13,7 @@ pcp_column: 'TOPLAM_YAGIS_OMGI_mm'
 insolationtime_file: "MGM_Test-Saatlik Güneşlenme Süresi (saat).xlsx"
 insolationtime_column: 'NA' # Column name should be defined but not needed for xlsx files
 # =====================================================================================
-# Change Minimum and Maximum Limits (ranges) accordingly for the variable files you added above
+# Change Minimum and Maximum Limits (ranges) accordingly for the variable files you added above. It will be used in creating normalized data.
 ranges:
   precip: [0, 50]
   tmp: [-30, 50]
