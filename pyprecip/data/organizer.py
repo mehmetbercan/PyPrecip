@@ -49,7 +49,7 @@ class StationOrganizerTR:
         # Ranges
         ranges = {k: tuple(v) for k, v in self.ranges.items()}
         # Ranges
-        stations = [int(c) for c in df_precip.columns]
+        stations = [c for c in df_precip.columns]
 
         for station in stations:
             st = self._build_station_dataframe(
@@ -79,28 +79,44 @@ class StationOrganizerTR:
         # Base index filled hourly
         df_stn = pd.DataFrame(index=pd.date_range(df_precip.index.min(), df_precip.index.max(), freq='1h'))
         df_stn = df_stn.join(_get(df_precip, "precip"), how="left")
-        df_stn = df_stn.join(_get(df_tmp, "tmp"), how="left")
-        df_stn = df_stn.join(_get(df_wndsp, "wndsp"), how="left")
-        # wind dir: letters -> numeric map
-        _wd = _get(df_wnddir, "wnddir")
-        if "wnddir" in _wd:
-            _wd["wnddir"] = _wd["wnddir"].astype(str).str.strip()
-            winddir2number = {'E':1,'ENE':2,'NE':3,'NNE':4,'N':5,'NNW':6,'NW':7,'WNW':8,'W':9,'WSW':10,'SW':11,'SSW':12,'S':13,'SSE':14,'SE':15,'ESE':16,'C':17}
-            _wdn = _wd["wnddir"].map(winddir2number)
-            df_stn["wnddir_nbr"] = _wdn
-        df_stn = df_stn.join(_get(df_mxwndsp, "mxwndsp"), how="left")
-        df_stn = df_stn.join(_get(df_pressure, "pressure"), how="left")
-        df_stn = df_stn.join(_get(df_rhum, "rhum"), how="left")
-        df_stn = df_stn.join(_get(df_radsum, "radsum"), how="left")
-        df_stn = df_stn.join(_get(df_rad, "rad"), how="left")
-        df_stn = df_stn.join(_get(df_insolationintensity, "insolationintensity"), how="left")
-        df_stn = df_stn.join(_get(df_insolationtime, "insolationtime"), how="left")
-        df_stn = df_stn.join(_get(df_minsoiltmp0cm, "minsoiltmp0cm"), how="left")
-        df_stn = df_stn.join(_get(df_soiltmp100cm, "soiltmp100cm"), how="left")
-        df_stn = df_stn.join(_get(df_soiltmp50cm, "soiltmp50cm"), how="left")
-        df_stn = df_stn.join(_get(df_soiltmp20cm, "soiltmp20cm"), how="left")
-        df_stn = df_stn.join(_get(df_soiltmp10cm, "soiltmp10cm"), how="left")
-        df_stn = df_stn.join(_get(df_soiltmp5cm, "soiltmp5cm"), how="left")
+        if not df_tmp.empty:
+            df_stn = df_stn.join(_get(df_tmp, "tmp"), how="left")
+        if not df_wndsp.empty:
+            df_stn = df_stn.join(_get(df_wndsp, "wndsp"), how="left")
+        if not df_wnddir.empty:
+            # wind dir: letters -> numeric map
+            _wd = _get(df_wnddir, "wnddir")
+            if "wnddir" in _wd:
+                _wd["wnddir"] = _wd["wnddir"].astype(str).str.strip()
+                winddir2number = {'E':1,'ENE':2,'NE':3,'NNE':4,'N':5,'NNW':6,'NW':7,'WNW':8,'W':9,'WSW':10,'SW':11,'SSW':12,'S':13,'SSE':14,'SE':15,'ESE':16,'C':17}
+                _wdn = _wd["wnddir"].map(winddir2number)
+                df_stn["wnddir_nbr"] = _wdn
+        if not df_mxwndsp.empty:
+            df_stn = df_stn.join(_get(df_mxwndsp, "mxwndsp"), how="left")
+        if not df_pressure.empty:
+            df_stn = df_stn.join(_get(df_pressure, "pressure"), how="left")
+        if not df_rhum.empty:
+            df_stn = df_stn.join(_get(df_rhum, "rhum"), how="left")
+        if not df_radsum.empty:
+            df_stn = df_stn.join(_get(df_radsum, "radsum"), how="left")
+        if not df_rad.empty:
+            df_stn = df_stn.join(_get(df_rad, "rad"), how="left")
+        if not df_insolationintensity.empty:
+            df_stn = df_stn.join(_get(df_insolationintensity, "insolationintensity"), how="left")
+        if not df_insolationtime.empty:
+            df_stn = df_stn.join(_get(df_insolationtime, "insolationtime"), how="left")
+        if not df_minsoiltmp0cm.empty:
+            df_stn = df_stn.join(_get(df_minsoiltmp0cm, "minsoiltmp0cm"), how="left")
+        if not df_soiltmp100cm.empty:
+            df_stn = df_stn.join(_get(df_soiltmp100cm, "soiltmp100cm"), how="left")
+        if not df_soiltmp50cm.empty:
+            df_stn = df_stn.join(_get(df_soiltmp50cm, "soiltmp50cm"), how="left")
+        if not df_soiltmp20cm.empty:
+            df_stn = df_stn.join(_get(df_soiltmp20cm, "soiltmp20cm"), how="left")
+        if not df_soiltmp10cm.empty:
+            df_stn = df_stn.join(_get(df_soiltmp10cm, "soiltmp10cm"), how="left")
+        if not df_soiltmp5cm.empty:
+            df_stn = df_stn.join(_get(df_soiltmp5cm, "soiltmp5cm"), how="left")
 
         return df_stn
 

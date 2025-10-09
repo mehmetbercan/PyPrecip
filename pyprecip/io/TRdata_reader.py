@@ -59,14 +59,14 @@ def read_mgm_excel(io: str) -> pd.DataFrame:
             if pre_gageid != gageid:
                 _df = pd.DataFrame(values, index=pd.DatetimeIndex(indeces))
                 if not _df.empty:
-                    _df.columns = [pre_gageid]
+                    _df.columns = [f'{pre_gageid}']
                     df = _df.copy(deep=True) if df.empty else pd.concat([df,_df], axis=1)
                 pre_gageid = gageid
                 indeces = []; values = []
 
     _df = pd.DataFrame(values, index=pd.DatetimeIndex(indeces))
     if not _df.empty:
-        _df.columns = [pre_gageid]
+        _df.columns = [f'{pre_gageid}']
         df = _df.copy(deep=True) if df.empty else pd.concat([df,_df], axis=1)
 
     # fill index and adjust timezone (+3h to TRT)
