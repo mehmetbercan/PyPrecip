@@ -45,19 +45,23 @@ class OrganizerConfig:
 @dataclass
 class CreateTrainingConfig:
     stations: List[int]
-    organized_dir: str = "outputs/organized"
-    out_dir: str = "outputs/training_inputs"
-    short_cols: List[str] = ("pcp", "rhum", "tmp")
-    cols: List[str] = ("precip","rhum","tmp")
-    min_precip_mm: float = 0.0
-    max_precip_mm: float = 50.0
-    min_tmp_c: float = -30.0
-    max_tmp_c: float = 50.0
-    min_rhum_pct: float = 0.0
-    max_rhum_pct: float = 100.0
-    mit_cold_hours: int = 1   # Oct–Mar
-    mit_warm_hours: int = 2   # Apr–Sep
-    global_event_buffer_hours: int = 1
+    organized_dir: str
+    out_dir: str
+    short_cols: List[str]
+    cols: List[str]
+
+    mit_cold_hours: int
+    mit_warm_hours: int
+    global_event_buffer_hours: int
+    event_total_pcp_threshold_4_1hr_event: float
+    event_total_pcp_threshold_4_larger_events: float
+
+    use_normalized_data: Optional[bool] = None
+    min_max_precip: Optional[Tuple[float, float]]  = None
+    interpolate_tmp_rhum: Optional[bool] = None
+    calculate_diff_tmp_rhum: Optional[bool] = None
+    rolling_mean_diff_tmp_rhum: Optional[bool] = None
+    rolling_mean_diff_tmp_rhum_hour: Optional[int]  = None
 
 @dataclass
 class TrainConfig:

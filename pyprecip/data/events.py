@@ -11,36 +11,44 @@ class TrainingDataCreator:
 
     def run(self):
         stations = self.cfg.stations
-        # read normalized per-station files
+        # read per-station files
         station_df: Dict[int, pd.DataFrame] = {}
         station_events: Dict[int, pd.DataFrame] = {}
 
         for st in stations:
-            df = pd.read_json(os.path.join(self.cfg.organized_dir, f'station_{st}_normalized.json'))
-            df = df[list(self.cfg.cols)]
-            df.columns = list(self.cfg.short_cols)
-
-            # denormalize pcp, tmp, rhum using provided min/max
-            df['pcp_mm'] = df['pcp'] * (self.cfg.max_precip_mm - self.cfg.min_precip_mm) + self.cfg.min_precip_mm
-            df['rhum']   = df['rhum'] * (self.cfg.max_rhum_pct - self.cfg.min_rhum_pct) + self.cfg.min_rhum_pct
-            df['tmp']    = df['tmp']  * (self.cfg.max_tmp_c   - self.cfg.min_tmp_c)   + self.cfg.min_tmp_c
-            df.drop(columns=['pcp'], inplace=True)
+            if self.cfg.use_normalized_data:
+                df = pd.read_json(os.path.join(self.cfg.organized_dir, f'station_{st}_normalized.json'))
+                df = df[list(self.cfg.cols)]
+                df.columns = list(self.cfg.short_cols)
+                # denormalize pcp using provided min/max
+                min_precip = self.cfg.min_max_precip[0]; max_precip = self.cfg.min_max_precip[1]
+                df['pcp_unit'] = df['pcp'] * (max_precip - min_precip) + min_precip
+            else:
+                df = pd.read_json(os.path.join(self.cfg.organized_dir, f'station_{st}.json'))
+                df = df[list(self.cfg.cols)]
+                df.columns = list(self.cfg.short_cols)
+                df['pcp_unit'] = df['pcp'].copy()
 
             # Interpolate temp/rhum
-            df["rhum"] = df["rhum"].interpolate(method="time")
-            df["tmp"] = df["tmp"].interpolate(method="time")
+            if self.cfg.interpolate_tmp_rhum:
+                df["rhum"] = df["rhum"].interpolate(method="time")
+                df["tmp"] = df["tmp"].interpolate(method="time")
 
             # diffs and rolling
-            df["tmp_diff"] = df["tmp"] - df["tmp"].shift(1)
-            df["rhum_diff"] = df["rhum"] - df["rhum"].shift(1)
-            df["tmp_diff_roll10h"] = df["tmp_diff"].rolling("10H").mean()
-            df["rhum_diff_roll10h"] = df["rhum_diff"].rolling("10H").mean()
+            if self.cfg.calculate_diff_tmp_rhum:
+                df["tmp_diff"] = df["tmp"] - df["tmp"].shift(1)
+                df["rhum_diff"] = df["rhum"] - df["rhum"].shift(1)
+                if self.cfg.rolling_mean_diff_tmp_rhum:
+                    df["tmp_diff_roll10h"] = df["tmp_diff"].rolling(
+                        "{}H".format(self.cfg.rolling_mean_diff_tmp_rhum_hour)).mean()
+                    df["rhum_diff_roll10h"] = df["rhum_diff"].rolling(
+                        "{}H".format(self.cfg.rolling_mean_diff_tmp_rhum_hour)).mean()
 
             # detect events per station (MIT per season)
             ev_series = []
             event_id = 0
             last_wet = None
-            for t, val in df["pcp_mm"].items():
+            for t, val in df["pcp_unit"].items():
                 if pd.notna(val) and val > 0:
                     # cold: Oct–Mar (1h) vs warm: Apr–Sep (2h)
                     mit = self.cfg.mit_cold_hours if t.month in [10,11,12,1,2,3] else self.cfg.mit_warm_hours
@@ -61,32 +69,35 @@ class TrainingDataCreator:
                 df.dropna(subset=["event"])
                   .groupby("event")
                   .agg(
-                      start=("pcp_mm", lambda x: x.index.min()),
-                      end=("pcp_mm",   lambda x: x.index.max()),
-                      duration=("pcp_mm", "count"),
-                      total_precip=("pcp_mm", "sum")
+                      start=("pcp_unit", lambda x: x.index.min()),
+                      end=("pcp_unit",   lambda x: x.index.max()),
+                      duration=("pcp_unit", "count"),
+                      total_precip=("pcp_unit", "sum")
                   )
             )
 
             # remove small events
             to_nan = []
             for ev in ev_info.index:
-                if ev_info.loc[ev, "total_precip"] <= 1:
+                if (ev_info.loc[ev, "total_precip"]
+                    <= self.cfg.event_total_pcp_threshold_4_1hr_event):
                     to_nan.append(ev)
-                elif ev_info.loc[ev, "duration"] > 1 and ev_info.loc[ev, "total_precip"] <= 2:
+                elif (ev_info.loc[ev, "duration"] > 1
+                    and ev_info.loc[ev, "total_precip"]
+                    <= self.cfg.event_total_pcp_threshold_4_larger_events):
                     to_nan.append(ev)
             if to_nan:
-                df.loc[df["event"].isin(to_nan), ["pcp_mm", "event"]] = np.nan
+                df.loc[df["event"].isin(to_nan), ["pcp_unit", "event"]] = np.nan
 
             # recompute event summary
             ev_info = (
                 df.dropna(subset=["event"])
                   .groupby("event")
                   .agg(
-                      start=("pcp_mm", lambda x: x.index.min()),
-                      end=("pcp_mm",   lambda x: x.index.max()),
-                      duration=("pcp_mm", "count"),
-                      total_precip=("pcp_mm", "sum")
+                      start=("pcp_unit", lambda x: x.index.min()),
+                      end=("pcp_unit",   lambda x: x.index.max()),
+                      duration=("pcp_unit", "count"),
+                      total_precip=("pcp_unit", "sum")
                   )
             ).reset_index(drop=True)
             ev_info.index = range(1, len(ev_info)+1)
@@ -129,6 +140,7 @@ class TrainingDataCreator:
         df_globalsummary['global_event'] = df_globalsummary.index + 1
 
         # build per-station cumulative event frames and save training inputs
+        ############# I AM HERE
         out_base = os.path.join(self.cfg.out_dir, f'Pirone_Nstn{len(stations)}_evnt_{"-".join(self.cfg.short_cols)}')
         os.makedirs(out_base, exist_ok=True)
 
@@ -140,12 +152,12 @@ class TrainingDataCreator:
                 start, end = row["new_start"], row["new_end"]
                 full_index = pd.date_range(start, end, freq="h")
                 temp = df.loc[start:end].reindex(full_index)
-                temp["pcp_mm"] = temp["pcp_mm"].fillna(0)
-                temp["cum_pcp"] = temp["pcp_mm"].cumsum()
+                temp["pcp_unit"] = temp["pcp_unit"].fillna(0)
+                temp["cum_pcp"] = temp["pcp_unit"].cumsum()
                 temp["event"] = ev
                 temp["cum_hour"] = (temp.index - temp.index[0]).total_seconds() / 3600
                 cum_frames.append(temp)
             df_cum = pd.concat(cum_frames)
-            keep = ["cum_pcp", "cum_hour", "rhum", "tmp", "pcp_mm", "rhum_diff", "tmp_diff", "tmp_diff_roll10h", "rhum_diff_roll10h"]
+            keep = ["cum_pcp", "cum_hour", "rhum", "tmp", "pcp_unit", "rhum_diff", "tmp_diff", "tmp_diff_roll10h", "rhum_diff_roll10h"]
             df_out = df_cum[keep].copy()
             joblib.dump(df_out, os.path.join(out_base, f"{st}_training_data.joblib"))
