@@ -12,7 +12,7 @@ def main():
 
 @main.command("organizeTR")
 @click.option("-c", "--config", type=click.Path(exists=True), required=True, help="YAML config for organizer.")
-def organize_cmd(config):
+def organizetr_cmd(config):
     """Organize raw MGM inputs into per-station JSON + normalized JSON."""
     cfg = load_yaml(config, OrganizerConfig)
     StationOrganizerTR(cfg).run()
