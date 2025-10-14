@@ -6,9 +6,12 @@ from typing import Tuple, Union
 
 def read_mgm_text(txtfile: str, column: str, is_windspeed: bool=False) -> Union[Tuple[pd.DataFrame, str], Tuple[pd.DataFrame, pd.DataFrame]]:
     # Reads Turkish State Meteorological Service text format data
-    df = pd.read_csv(txtfile, parse_dates=[[2,3,4,5]], index_col=0,
-                     date_format="%Y %m %d %H", sep='|')
-    df.index.name = 'DateTime'
+    df = pd.read_csv(txtfile, sep='|')
+    df["DateTime"] = pd.to_datetime(
+        df[["YIL", "AY", "GUN", "SAAT"]].astype(str).agg(" ".join, axis=1),
+        format="%Y %m %d %H"
+    )
+    df = df.set_index("DateTime")
     stations = df['Istasyon_No'].unique()
 
     if is_windspeed:

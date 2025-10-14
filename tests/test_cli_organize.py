@@ -2,9 +2,11 @@ import pytest
 from click.testing import CliRunner
 from pathlib import Path
 from pyprecip.cli import main
+import json
+import pandas as pd
 
 @pytest.mark.integration
-def test_organizeTR():
+def test_organize_tr():
     """Run `pyprecip organizeTR` using the real YAML config and verify expected output."""
 
     # relative to this script's root
@@ -28,8 +30,12 @@ def test_organizeTR():
     json_files = list(output_dir.glob("station_*.json"))
     assert json_files, "No station_*.json files created"
 
-    # if specific file exists, check it
-    if expected_file.exists():
-        print(f"SUCCESS: CLI succeeded and created: {expected_file}")
-    else:
-        print(f"WARNING: CLI ran successfully but did not find {expected_file.name}")
+    # --- expected output checks ---
+    assert expected_file.exists(), f"Expected JSON file not found: {expected_file}"
+
+    # --- check contents of JSON file ---
+    df = pd.read_json(expected_file)
+
+    assert not df.empty, f"DataFrame loaded from {expected_file} is empty"
+    assert "precip" in df.columns, "Missing column: 'precip'"
+    assert df.precip.sum() == 107.2
