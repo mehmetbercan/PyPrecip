@@ -22,6 +22,14 @@ From the project root (where `pyproject.toml` resides):
 ```bash 
 pip install -e .
 ```
+
+### Running Tests 
+```bash 
+cd PyPrecip\tests
+pytest test_cli_organize.py::test_organize_tr
+ 
+```
+
 ## Command-line interface (CLI) usage: 
 
 ### 1) Organize raw data  
@@ -39,10 +47,5 @@ pyprecip create-training -c examples/configs/create_training_example.yaml
 pyprecip train -c examples/configs/train_example.yaml  
 ```
 
-### 4) Running Tests 
-```bash 
-cd PyPrecip\tests
-pytest test_cli_organize.py::test_organize_tr
- 
-```
+
 
