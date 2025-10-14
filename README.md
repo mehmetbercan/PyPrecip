@@ -34,7 +34,7 @@ pytest test_cli_organize.py::test_organize_tr
 
 ### 1) Organize raw data  
 ```bash 
-pyprecip organizeTR -c examples/configs/organizer_example_4TRstate.yaml 
+pyprecip organize-tr -c examples/configs/organizer_example_4TRstate.yaml 
 ``` 
 
 ### 2) Create event-based training inputs  

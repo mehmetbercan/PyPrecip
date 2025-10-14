@@ -10,7 +10,7 @@ from .modeling.cnn import train_cnn
 def main():
     """PyPrecip CLI"""
 
-@main.command("organizeTR")
+@main.command("organize-tr")
 @click.option("-c", "--config", type=click.Path(exists=True), required=True, help="YAML config for organizer.")
 def organizetr_cmd(config):
     """Organize raw MGM inputs into per-station JSON + normalized JSON."""
