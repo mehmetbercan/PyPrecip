@@ -140,8 +140,7 @@ class TrainingDataCreator:
         df_globalsummary['global_event'] = df_globalsummary.index + 1
 
         # build per-station cumulative event frames and save training inputs
-        ############# I AM HERE
-        out_base = os.path.join(self.cfg.out_dir, f'Pirone_Nstn{len(stations)}_evnt_{"-".join(self.cfg.short_cols)}')
+        out_base = os.path.join(self.cfg.out_dir, f'CumEvnt_Nstn{len(stations)}_{"-".join(self.cfg.short_cols)}')
         os.makedirs(out_base, exist_ok=True)
 
         for st in stations:
@@ -158,6 +157,11 @@ class TrainingDataCreator:
                 temp["cum_hour"] = (temp.index - temp.index[0]).total_seconds() / 3600
                 cum_frames.append(temp)
             df_cum = pd.concat(cum_frames)
-            keep = ["cum_pcp", "cum_hour", "rhum", "tmp", "pcp_unit", "rhum_diff", "tmp_diff", "tmp_diff_roll10h", "rhum_diff_roll10h"]
+            keep = ["cum_pcp", "cum_hour"] + self.cfg.short_cols
+            if self.cfg.calculate_diff_tmp_rhum:
+                keep += ["rhum_diff", "tmp_diff"]
+                if self.cfg.rolling_mean_diff_tmp_rhum:
+                    h = self.cfg.rolling_mean_diff_tmp_rhum_hour
+                    keep += [f"tmp_diff_roll{h}h", f"rhum_diff_roll{h}h"]
             df_out = df_cum[keep].copy()
             joblib.dump(df_out, os.path.join(out_base, f"{st}_training_data.joblib"))
