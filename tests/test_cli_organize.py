@@ -6,7 +6,7 @@ import json
 import pandas as pd
 
 @pytest.mark.integration
-def test_organize_tr():
+def test_organize_tr_cmd():
     """Run `pyprecip organizeTR` using the real YAML config and verify expected output."""
 
     # relative to this script's root
@@ -20,7 +20,7 @@ def test_organize_tr():
     runner = CliRunner()
 
     # --- run CLI command ---
-    result = runner.invoke(main, ["organizeTR", "-c", str(config_path)])
+    result = runner.invoke(main, ["organize-tr", "-c", str(config_path)])
 
     # --- assertions ---
     assert result.exit_code == 0, f"CLI failed: {result.output}"

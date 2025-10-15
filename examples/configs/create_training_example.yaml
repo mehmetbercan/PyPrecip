@@ -1,6 +1,6 @@
 stations: [18352, 18186]
-organized_dir: "examples/outputs/organized"
-out_dir: "examples/outputs/training_inputs"
+organized_dir: "D:/PROJECTS/PyPrecip/examples/outputs/organized"
+out_dir: "D:/PROJECTS/PyPrecip/examples/outputs/training_inputs"
 short_cols: ["pcp","instm"] # always use pcp for precip, tmp for temperature and rhum for relative humidity
 cols: ["precip","insolationtime"]
 

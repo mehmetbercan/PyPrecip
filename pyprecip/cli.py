@@ -21,7 +21,7 @@ def organizetr_cmd(config):
 @main.command("create-training")
 @click.option("-c", "--config", type=click.Path(exists=True), required=True, help="YAML config for create-training.")
 def create_training_cmd(config):
-    """Create event-based training datasets (Pirone-like)."""
+    """Create event-based training datasets."""
     cfg = load_yaml(config, CreateTrainingConfig)
     TrainingDataCreator(cfg).run()
     click.echo("Training data created.")

@@ -26,8 +26,8 @@ pip install -e .
 ### Running Tests 
 ```bash 
 cd PyPrecip\tests
-pytest test_cli_organize.py::test_organize_tr
- 
+pytest test_cli_organize.py::test_organize_tr_cmd
+pytest test_cli_create_training::test_create_training_cmd
 ```
 
 ## Command-line interface (CLI) usage: 
