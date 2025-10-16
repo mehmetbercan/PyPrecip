@@ -26,7 +26,7 @@ def create_training_cmd(config):
     TrainingDataCreator(cfg).run()
     click.echo("Training data created.")
 
-@main.command("train")
+@main.command("train-cum-evnt")
 @click.option("-c", "--config", type=click.Path(exists=True), required=True, help="YAML config for training.")
 def train_cmd(config):
     """Train CNN classification model for 1-hour nowcast."""

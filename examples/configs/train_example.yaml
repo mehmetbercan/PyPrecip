@@ -1,12 +1,12 @@
-stations: [19088, 18352, 18186]
-target_station: 19088
-feature_cols: ["cum_pcp", "pcp_mm", "rhum", "tmp", "rhum_diff", "tmp_diff", "tmp_diff_roll10h", "rhum_diff_roll10h", "cum_hour"]
+stations: [18352, 18186]
+target_station: 18186
+feature_cols: ["cum_pcp", "pcp", "instm", "cum_hour"]
 train_col: "cum_pcp"
-inputs_dir: "outputs/training_inputs"
-model_dir: "outputs/models/cnn/v1"
+inputs_dir: "D:/PROJECTS/PyPrecip/examples/outputs/training_inputs/CumEvnt_Nstn2_pcp-instm"
+model_dir: "D:/PROJECTS/PyPrecip/examples/outputs/models/cnn/v0"
 batch_size: 256
 epochs: 500
-patience: 10000
+patience: 100
 hidden_units: 64
 
 # Optional custom class intervals

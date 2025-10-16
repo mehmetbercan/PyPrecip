@@ -67,15 +67,15 @@ class CreateTrainingConfig:
 class TrainConfig:
     stations: List[int]
     target_station: int
-    feature_cols: List[str] = ("cum_pcp", "pcp_mm", "rhum", "tmp", "rhum_diff", "tmp_diff", "tmp_diff_roll10h", "rhum_diff_roll10h", "cum_hour")
-    train_col: str = "cum_pcp"
-    inputs_dir: str = "outputs/training_inputs"
-    model_dir: str = "outputs/models/cnn/v1"
-    batch_size: int = 256
-    epochs: int = 500
-    patience: int = 10000
-    hidden_units: int = 64
-    class_intervals: Optional[list] = None  # list of (a,b)
+    feature_cols: List[str]
+    train_col: str
+    inputs_dir: str
+    model_dir: str
+    batch_size: int
+    epochs: int
+    patience: int
+    hidden_units: int
+    class_intervals: [list]
 
 def load_yaml(path, cls):
     with open(path, "r", encoding="utf-8") as f:

@@ -3,13 +3,13 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models, callbacks, optimizers
 from sklearn.model_selection import train_test_split
-from .metrics import calc_metrics_paper
+from .metrics import calc_metrics
 from .classes import make_class_bins, to_class_indices
 from .datasets import load_station_inputs
 
 def train_cnn(cfg):
     wanted_cols = cfg.feature_cols
-    base_dir = os.path.join(cfg.inputs_dir, f'Pirone_Nstn{len(cfg.stations)}_evnt_pcp-rhum-tmp')
+    base_dir = cfg.inputs_dir
 
     df = load_station_inputs(cfg.stations, base_dir, cfg.train_col, [c for c in wanted_cols if c != cfg.train_col])
 
@@ -23,9 +23,7 @@ def train_cnn(cfg):
     y = y[valid]
 
     # classes
-    intervals = cfg.class_intervals or [
-        (0, 2), (2, 5), (5, 8), (8, 12), (12, 18), (18, 25), (25, 32), (32, 160)
-    ]
+    intervals = cfg.class_intervals
     bin_edges, class_means = make_class_bins(intervals)
     y_cls, mask = to_class_indices(y, bin_edges)
     X = X[mask.values]
@@ -72,5 +70,5 @@ def train_cnn(cfg):
     # Evaluate
     y_prob = model.predict(X_test, batch_size=1024, verbose=0)
     y_pred_cls = y_prob.argmax(axis=1)
-    metrics = calc_metrics_paper(y_test, y_pred_cls, class_means)
+    metrics = calc_metrics(y_test, y_pred_cls, class_means)
     return model_path, metrics

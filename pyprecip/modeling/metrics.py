@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.metrics import mean_squared_error, confusion_matrix
 import math
 
-def calc_metrics_paper(y_true_cls, y_pred_cls, class_means):
+def calc_metrics(y_true_cls, y_pred_cls, class_means):
     cm = confusion_matrix(y_true_cls, y_pred_cls, labels=range(len(class_means)))
     total = cm.sum()
     hits = np.trace(cm)

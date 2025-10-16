@@ -44,7 +44,7 @@ pyprecip create-training -c examples/configs/create_training_example.yaml
 
 ### 3) Train CNN  
 ```bash 
-pyprecip train -c examples/configs/train_example.yaml  
+pyprecip train-cum-evnt -c examples/configs/train_example.yaml  
 ```
 
 
