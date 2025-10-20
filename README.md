@@ -33,16 +33,19 @@ pytest test_cli_train_cum_evnt.py::test_train_cum_evnt_cmd
 ## Command-line interface (CLI) usage: 
 
 ### 1) Organize raw data  
+Use the following command to organize data from the Turkish State Meteorological Service:
 ```bash 
 pyprecip organize-tr -c examples/configs/organizer_example_4TRstate.yaml 
 ``` 
 
-### 2) Create event-based training inputs  
+### 2) Create training inputs 
+Use the following command to generate event-based training inputs:
 ```bash 
 pyprecip create-training -c examples/configs/create_training_example.yaml  
 ```
 
 ### 3) Train CNN  
+Use the following command to train a model optimized for event-based input data (with optional modifications to the CNN architecture in the YAML file):
 ```bash 
 pyprecip train-cum-evnt -c examples/configs/train_example.yaml  
 ```
