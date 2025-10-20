@@ -16,6 +16,7 @@ cd path\to\your\project
 python -m venv venv
 ```
 3. Activate the virtual environment:  
+
 **Windows:**
 ```bash
 venv\Scripts\activate
@@ -42,9 +43,17 @@ pip install -e .
 ```
 
 ### Running Tests
-Example (using `pytest`):
+To run all test files in the `tests` directory (using `pytest`):
 ```bash
 pytest
 ```
+To run a specific test file (for example, `test_model.py`):
+```bash
+pytest tests/test_model.py
+```
+To run a specific test function inside a test file (for example, `test_train_function` in `test_model.py`):
+~~~bash
+pytest tests/test_model.py::test_train_function
+~~~
 
 ✅ **Tip:** Always activate your virtual environment in CMD before installing packages or running scripts. Happy coding! 🚀
