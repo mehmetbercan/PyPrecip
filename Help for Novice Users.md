@@ -1,5 +1,5 @@
 ## How to Install Python
-Download Python from https://www.python.org/downloads/. Run the installer and make sure to Add Python to PATH (in environment variables). Then open Command Prompt (CMD) and verify installation:
+Download Python from [here](https://www.python.org/downloads). Run the installer and make sure to Add Python to PATH (in environment variables). Then open Command Prompt (CMD) and verify installation:
 ```bash
 python --version
 ```
