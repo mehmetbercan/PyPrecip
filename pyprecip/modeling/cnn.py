@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from .metrics import calc_metrics
 from .classes import make_class_bins, to_class_indices
 from .datasets import load_station_inputs
+import pickle
 
 def train_cnn(cfg):
     wanted_cols = cfg.feature_cols
@@ -57,8 +58,11 @@ def train_cnn(cfg):
     )
 
     # Save model and requirements
-    model_path = os.path.join(cfg.model_dir, f'NowcastMdl_st{cfg.target_station}_1h.h5')
-    model.save(model_path, save_format='h5')
+    model_path = os.path.join(cfg.model_dir, f'NowcastMdl_st{cfg.target_station}_1h.keras')
+    model.save(model_path, save_format='keras')
+    model_history_path = os.path.join(hist_dir, f'NowcastMdl_st{cfg.target_station}_1h.pckl')
+    with open(model_history_path, 'wb') as file_pi:
+        pickle.dump(history.history, file_pi)
     try:
         from pip._internal.operations import freeze
         with open(os.path.join(cfg.model_dir, 'requirements.txt'), 'w') as f:

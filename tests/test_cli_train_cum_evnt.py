@@ -12,7 +12,10 @@ def test_train_cum_evnt_cmd():
     here = Path(__file__).resolve().parent
     config_path = Path(here / "../examples/configs/train_example.yaml")
     output_dir = Path(here / "../examples/outputs/models/cnn/v0")
-    expected_file = output_dir / "NowcastMdl_st18186_1h.h5"
+    expected_file = output_dir / "NowcastMdl_st18186_1h.keras"
+
+    output_dir2 = Path(output_dir, "histories")
+    expected_file2 = output_dir2 / "NowcastMdl_st18186_1h.pckl"
 
     # --- preconditions ---
     assert config_path.exists(), f"Config not found: {config_path}"
@@ -27,6 +30,7 @@ def test_train_cum_evnt_cmd():
 
     # --- expected output checks ---
     assert output_dir.exists(), f"Output directory missing: {output_dir}"
-    assert expected_file.exists(), f"Expected JSON file not found: {expected_file}"
+    assert expected_file.exists(), f"Expected Keras file not found: {expected_file}"
+    assert expected_file2.exists(), f"Expected Pickle file not found: {expected_file2}"
 
 
