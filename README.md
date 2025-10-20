@@ -11,7 +11,8 @@ It starts with **station-based precipitation** and will later include **radar-ba
 
 - Data downloaders for precipitation stations and radar (planned). 
 - Preprocessing and feature engineering pipelines.
-- Baseline and advanced AI models for nowcasting/forecasting.
+- Baseline and advanced AI models for nowcasting.
+- Baseline and advanced AI models for forecasting (planned).
 - Evaluation metrics and visualization tools.
 
 ---
@@ -31,15 +32,15 @@ pytest test_cli_train_cum_evnt.py::test_train_cum_evnt_cmd
 ```
 
 ## Command-line interface (CLI) usage: 
-
+Note: If you include `-c file/to/yaml` in your command, ensure that the corresponding YAML file exists or has been updated for that command.
 ### 1) Organize raw data  
-Use the following command to organize data from the Turkish State Meteorological Service:
+Use the following command to organize data from the Turkish State Meteorological Service to standard PyPrecip format:
 ```bash 
 pyprecip organize-tr -c examples/configs/organizer_example_4TRstate.yaml 
 ``` 
 
 ### 2) Create training inputs 
-Use the following command to generate event-based training inputs:
+Use the following command to generate event-based training inputs from the organized data in the standard PyPrecip format:
 ```bash 
 pyprecip create-training -c examples/configs/create_training_example.yaml  
 ```
