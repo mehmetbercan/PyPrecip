@@ -38,7 +38,7 @@ def train_cnn(cfg):
         layers.Dense(n_classes, activation="softmax")
     ])
     model.compile(
-        optimizer=optimizers.Adam(1e-3),
+        optimizer=optimizers.Adam(learning_rate=cfg.learning_rate),
         loss="sparse_categorical_crossentropy",
         metrics=["sparse_categorical_accuracy"]
     )
@@ -46,14 +46,14 @@ def train_cnn(cfg):
     hist_dir = os.path.join(cfg.model_dir, "histories")
     os.makedirs(hist_dir, exist_ok=True)
 
-    es = callbacks.EarlyStopping(monitor="val_loss", patience=cfg.patience, restore_best_weights=True, verbose=1)
+    es = callbacks.EarlyStopping(monitor="val_loss", patience=cfg.patience, restore_best_weights=True, verbose=cfg.verbose)
     history = model.fit(
         X_train, y_train,
         validation_data=(X_val, y_val),
         epochs=cfg.epochs,
         batch_size=cfg.batch_size,
         callbacks=[es],
-        verbose=0
+        verbose=cfg.verbose
     )
 
     # Save model and requirements

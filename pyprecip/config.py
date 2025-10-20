@@ -75,6 +75,8 @@ class TrainConfig:
     epochs: int
     patience: int
     hidden_units: int
+    learning_rate: float
+    verbose: int
     class_intervals: [list]
 
 def load_yaml(path, cls):

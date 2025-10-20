@@ -4,10 +4,14 @@ feature_cols: ["cum_pcp", "pcp", "instm", "cum_hour"]
 train_col: "cum_pcp"
 inputs_dir: "D:/PROJECTS/PyPrecip/examples/outputs/training_inputs/CumEvnt_Nstn2_pcp-instm"
 model_dir: "D:/PROJECTS/PyPrecip/examples/outputs/models/cnn/v0"
+
+# Training Parameters
 batch_size: 256
 epochs: 500
 patience: 100
 hidden_units: 64
+learning_rate: 0.001
+verbose: 2
 
 # Optional custom class intervals
 class_intervals:

@@ -28,6 +28,7 @@ pip install -e .
 cd PyPrecip\tests
 pytest test_cli_organize.py::test_organize_tr_cmd
 pytest test_cli_create_training.py::test_create_training_cmd
+pytest test_cli_train_cum_evnt.py::test_train_cum_evnt_cmd
 ```
 
 ## Command-line interface (CLI) usage: 
