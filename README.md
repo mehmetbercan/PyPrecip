@@ -7,18 +7,17 @@ It starts with **station-based precipitation** and will later include **radar-ba
 
 ---
 
-## Features (planned)
+## Features 
 
-- Data downloaders for precipitation stations (and later radar).
+- Data downloaders for precipitation stations and radar (planned). 
 - Preprocessing and feature engineering pipelines.
 - Baseline and advanced AI models for nowcasting/forecasting.
 - Evaluation metrics and visualization tools.
 
 ---
 
-
 ## How to install and run
-From the project root (where `pyproject.toml` resides):
+For beginners, please read [Help for Novice Users.md](Help for Novice Users.md) first. Then, Open Command Prompt (CMD) in your project folder and run the following from the project root (where pyproject.toml is located):
 ```bash 
 pip install -e .
 ```
