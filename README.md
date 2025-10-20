@@ -17,7 +17,7 @@ It starts with **station-based precipitation** and will later include **radar-ba
 ---
 
 ## How to install and run
-For beginners, please read [Help for Novice Users.md](Help for Novice Users.md) first. Then, Open Command Prompt (CMD) in your project folder and run the following from the project root (where pyproject.toml is located):
+For beginners, please read [Help for Novice Users.md](Help%20for%20Novice%20Users.md) first. Then, Open Command Prompt (CMD) in your project folder and run the following from the project root (where pyproject.toml is located):
 ```bash 
 pip install -e .
 ```
