@@ -1,6 +1,6 @@
 stations: [18352, 18186]
 target_station: 18186
-feature_cols: ["cum_pcp", "pcp", "instm", "cum_hour"]
+feature_cols: ["cum_pcp", "pcp", "instm", "cum_hour"] # only cum_pcp and cum_hour created in create-training as event cumulative values
 train_col: "cum_pcp"
 inputs_dir: "D:/PROJECTS/PyPrecip/examples/outputs/training_inputs/CumEvnt_Nstn2_pcp-instm"
 model_dir: "D:/PROJECTS/PyPrecip/examples/outputs/models/cnn/v0"

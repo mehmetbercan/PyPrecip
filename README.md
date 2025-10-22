@@ -36,7 +36,7 @@ Note: If you include `-c file/to/yaml` in your command, ensure that the correspo
 ### 1) Organize raw data  
 Use the following command to organize data from the Turkish State Meteorological Service to standard PyPrecip format:
 ```bash 
-pyprecip organize-tr -c examples/configs/organizer_example_4TRstate.yaml 
+pyprecip organize-tr -c examples/configs/organizer_tr_example.yaml 
 ``` 
 
 ### 2) Create training inputs 
@@ -48,7 +48,7 @@ pyprecip create-training -c examples/configs/create_training_example.yaml
 ### 3) Train CNN  
 Use the following command to train a model optimized for event-based input data (with optional modifications to the CNN architecture in the YAML file):
 ```bash 
-pyprecip train-cum-evnt -c examples/configs/train_example.yaml  
+pyprecip train-cum-evnt -c examples/configs/train_cum_evnt_example.yaml  
 ```
 
 

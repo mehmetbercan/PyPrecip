@@ -11,7 +11,7 @@ def test_organize_tr_cmd():
 
     # relative to this script's root
     here = Path(__file__).resolve().parent
-    config_path = Path(here / "../examples/configs/organizer_example_4TRstate.yaml")
+    config_path = Path(here / "../examples/configs/organizer_tr_example.yaml")
     output_dir = Path(here / "../examples/outputs/organized")
     expected_file = output_dir / "station_18186.json"
 

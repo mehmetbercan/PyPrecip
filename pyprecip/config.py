@@ -7,7 +7,7 @@ class OrganizerConfig:
     mgm_hourly_folder: str
     outputs_dir: str
     ranges: Dict[str, Tuple[float, float]]
-    # file names can be defined in YAML (eg. organizer_example_4TRstate.yaml)
+    # file names can be defined in YAML (eg. organizer_tr_example.yaml)
     pcp_file:  str
     pcp_column:  str
     tmp_file: Optional[str] = None

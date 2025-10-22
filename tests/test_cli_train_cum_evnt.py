@@ -10,7 +10,7 @@ def test_train_cum_evnt_cmd():
 
     # relative to this script's root
     here = Path(__file__).resolve().parent
-    config_path = Path(here / "../examples/configs/train_example.yaml")
+    config_path = Path(here / "../examples/configs/train_cum_evnt_example.yaml")
     output_dir = Path(here / "../examples/outputs/models/cnn/v0")
     expected_file = output_dir / "NowcastMdl_st18186_1h.keras"
 

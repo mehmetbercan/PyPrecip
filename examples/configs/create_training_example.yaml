@@ -1,8 +1,11 @@
 stations: [18352, 18186]
 organized_dir: "D:/PROJECTS/PyPrecip/examples/outputs/organized"
 out_dir: "D:/PROJECTS/PyPrecip/examples/outputs/training_inputs"
-short_cols: ["pcp","instm"] # always use pcp for precip, tmp for temperature and rhum for relative humidity
-cols: ["precip","insolationtime"]
+short_cols: ["pcp","instm"] # always use pcp for precip, tmp for temperature and rhum for relative humidity. You can define others yourself.
+cols: ["precip","insolationtime"] # Select within: ['precip', 'pressure', 'rhum', 'wndsp', 'mxwndsp', 'wnddir_nbr',
+                                  #         'radsum', 'rad', 'insolationintensity', 'insolationtime', 'tmp',
+                                  #         'minsoiltmp0cm', 'soiltmp5cm',, 'soiltmp10cm', 'soiltmp20cm',
+                                  #         'soiltmp50cm', 'soiltmp100cm']
 
 # Precipitation Event Definition Parameters
 mit_cold_hours: 1 # cold: Oct–Mar (1h)
