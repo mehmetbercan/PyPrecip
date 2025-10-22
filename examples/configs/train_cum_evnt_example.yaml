@@ -1,4 +1,4 @@
-stations: [18352, 18186]
+stations: [18352, 18186] # if any of feature_cols below has nan value for any of these stations, it will be nan for all stations. So, chose stations and feature_cols carefully.
 target_station: 18186
 feature_cols: ["cum_pcp", "pcp", "instm", "cum_hour"] # only cum_pcp and cum_hour created in create-training as event cumulative values
 train_col: "cum_pcp"
