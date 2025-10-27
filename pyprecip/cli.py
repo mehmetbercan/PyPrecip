@@ -5,7 +5,7 @@ from .data.organizer import StationOrganizerTR
 from .data.events import TrainingDataCreator
 from .modeling.cnn import train_cnn
 
-from .visualize.visualizer import interactive_config_builder_1
+from .visualize.visualizer import interactive_config_builder_4_create_training
 
 @click.group()
 @click.version_option(__version__, prog_name="pyprecip")
@@ -46,7 +46,7 @@ def train_cmd(config):
 @click.option("-i", "--input", type=click.Path(exists=True), required=True, help="Path to organized input directory.")
 def interactive_config_builder_1_cmd(input):
     """Interactive builder and  data visualizer for create-training cli YAML configuration file."""
-    interactive_config_builder_1(input)
+    interactive_config_builder_4_create_training(input)
     click.echo("create-training cli YAML configuration file created.")
 
 

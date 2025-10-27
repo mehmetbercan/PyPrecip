@@ -32,7 +32,7 @@ def discover_stations(organized_dir: str):
     stations = list(set([f.stem.split('_')[1][0:5] for f in files]))
     return stations
 
-def interactive_config_builder_1(organized_dir):
+def interactive_config_builder_4_create_training(organized_dir):
     """Launch interactive Dash app for visualizing and building YAML config."""
     stations = discover_stations(organized_dir)
     if not stations:

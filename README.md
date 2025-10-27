@@ -44,7 +44,7 @@ Use the following command to generate event-based training inputs from the organ
 ```bash 
 pyprecip create-training -c examples/configs/create_training_example.yaml  
 ```
-#### 2.1) Visualize and create configuration interactively  
+#### 2.1) Visualize data and create configuration interactively  
 
 You can launch the visualization tool to build and preview a YAML configuration interactively before running the "create-training" command above:
 
