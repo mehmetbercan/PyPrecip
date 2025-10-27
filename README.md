@@ -34,16 +34,24 @@ pytest test_cli_train_cum_evnt.py::test_train_cum_evnt_cmd
 ## Command-line interface (CLI) usage: 
 Note: If you include `-c file/to/yaml` in your command, ensure that the corresponding YAML file exists or has been updated for that command.
 ### 1) Organize raw data  
-Use the following command to organize data from the Turkish State Meteorological Service to standard PyPrecip format:
+Use the following command to organize mixed data format from the Turkish State Meteorological Service to standard PyPrecip input format:
 ```bash 
 pyprecip organize-tr -c examples/configs/organizer_tr_example.yaml 
 ``` 
 
 ### 2) Create training inputs 
-Use the following command to generate event-based training inputs from the organized data in the standard PyPrecip format:
+Use the following command to generate event-based training inputs from the organized data in the standard PyPrecip training input format:
 ```bash 
 pyprecip create-training -c examples/configs/create_training_example.yaml  
 ```
+#### 2.1) Visualize and create configuration interactively  
+
+You can launch the visualization tool to build and preview a YAML configuration interactively before running the "create-training" command above:
+
+```bash  
+pyprecip config-builder-4-create-training -i D:/PROJECTS/PyPrecip/examples/outputs/organized  
+```
+
 
 ### 3) Train CNN  
 Use the following command to train a model optimized for event-based input data (with optional modifications to the CNN architecture in the YAML file):

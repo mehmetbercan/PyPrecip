@@ -5,6 +5,8 @@ from .data.organizer import StationOrganizerTR
 from .data.events import TrainingDataCreator
 from .modeling.cnn import train_cnn
 
+from .visualize.visualizer import interactive_config_builder_1
+
 @click.group()
 @click.version_option(__version__, prog_name="pyprecip")
 def main():
@@ -37,6 +39,16 @@ def train_cmd(config):
     for k, v in metrics.items():
         if k != "ConfusionMatrix":
             click.echo(f"- {k}: {v:.3f}")
+
+# ----------------------------------------------------------------------
+# Interactive Helpers (visualizer and configuration yaml file creator)
+@main.command("config-builder-4-create-training")
+@click.option("-i", "--input", type=click.Path(exists=True), required=True, help="Path to organized input directory.")
+def interactive_config_builder_1_cmd(input):
+    """Interactive builder and  data visualizer for create-training cli YAML configuration file."""
+    interactive_config_builder_1(input)
+    click.echo("create-training cli YAML configuration file created.")
+
 
 if __name__ == "__main__":
     main()

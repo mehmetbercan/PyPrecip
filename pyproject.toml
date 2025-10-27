@@ -45,7 +45,8 @@ dependencies = [
   "opt-einsum==3.3.0",
   "wrapt==1.14.1",
   "typing_extensions==4.10.0",
-  "six"
+  "six",
+  "dash==3.2.0"
 ]
 
 [project.optional-dependencies]

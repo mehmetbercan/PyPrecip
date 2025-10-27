@@ -12,6 +12,28 @@ class StationOrganizerTR:
         os.makedirs(self.out_dir, exist_ok=True)
 
     def run(self):
+        (stations, df_precip, df_tmp, df_wndsp, df_wnddir, df_mxwndsp,
+        df_pressure, df_rhum, df_radsum, df_rad, df_insolationintensity,
+        df_insolationtime, df_minsoiltmp0cm, df_soiltmp100cm, df_soiltmp50cm,
+        df_soiltmp20cm, df_soiltmp10cm, df_soiltmp5cm) = self._get_tr_data_into_dataframes()
+
+        # Ranges
+        ranges = {k: tuple(v) for k, v in self.ranges.items()}
+
+        for station in stations:
+            st = self._build_station_dataframe(
+                station,
+                df_precip, df_tmp, df_wndsp, df_wnddir, df_mxwndsp,
+                df_pressure, df_rhum, df_radsum, df_rad, df_insolationintensity,
+                df_insolationtime, df_minsoiltmp0cm, df_soiltmp100cm, df_soiltmp50cm,
+                df_soiltmp20cm, df_soiltmp10cm, df_soiltmp5cm,
+                ranges
+            )
+            st.to_json(os.path.join(self.out_dir, f'station_{station}.json'))
+            st_norm = self._normalize(st.copy(), ranges)
+            st_norm.to_json(os.path.join(self.out_dir, f'station_{station}_normalized.json'))
+
+    def _get_tr_data_into_dataframes(self):
         # Reads Turkish State Meteorological Service excel or text format data
         df_precip, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.pcp_file,
                              self.cfg.pcp_column, is_windspeed=False)
@@ -45,24 +67,12 @@ class StationOrganizerTR:
                              self.cfg.soiltmp10cm_column, is_windspeed=False)
         df_soiltmp5cm, _ = read_mgm(self.cfg.mgm_hourly_folder, self.cfg.soiltmp5cm_file,
                              self.cfg.soiltmp5cm_column, is_windspeed=False)
-
-        # Ranges
-        ranges = {k: tuple(v) for k, v in self.ranges.items()}
-        # Ranges
+        # stations
         stations = [c for c in df_precip.columns]
-
-        for station in stations:
-            st = self._build_station_dataframe(
-                station,
-                df_precip, df_tmp, df_wndsp, df_wnddir, df_mxwndsp,
+        return (stations, df_precip, df_tmp, df_wndsp, df_wnddir, df_mxwndsp,
                 df_pressure, df_rhum, df_radsum, df_rad, df_insolationintensity,
                 df_insolationtime, df_minsoiltmp0cm, df_soiltmp100cm, df_soiltmp50cm,
-                df_soiltmp20cm, df_soiltmp10cm, df_soiltmp5cm,
-                ranges
-            )
-            st.to_json(os.path.join(self.out_dir, f'station_{station}.json'))
-            st_norm = self._normalize(st.copy(), ranges)
-            st_norm.to_json(os.path.join(self.out_dir, f'station_{station}_normalized.json'))
+                df_soiltmp20cm, df_soiltmp10cm, df_soiltmp5cm)
 
     def _build_station_dataframe(self, station, df_precip, df_tmp, df_wndsp, df_wnddir, df_mxwndsp,
                                  df_pressure, df_rhum, df_radsum, df_rad, df_insolationintensity,
