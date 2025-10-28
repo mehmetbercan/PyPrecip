@@ -46,7 +46,7 @@ pyprecip create-training -c examples/configs/create_training_example.yaml
 ```
 #### 2.1) Visualize data and create configuration interactively  
 
-You can launch the visualization tool to build and preview a YAML configuration interactively before running the "create-training" command above:
+You can launch the visualization tool to build and preview a YAML configuration interactively before running the `create-training` command above:
 
 ```bash  
 pyprecip config-builder-4-create-training -i D:/PROJECTS/PyPrecip/examples/outputs/organized  
@@ -60,7 +60,7 @@ pyprecip train-cum-evnt -c examples/configs/train_cum_evnt_example.yaml
 ```
 #### 3.1) Interactive training data visualizer and class ranges updater
 
-You can launch the visualization tool to view the training (y) data interactively. This will interactively help define class ranges homogeneously. Updated configuration can be used instead of original configuration in above train-cum-evnt CLI.
+You can launch the visualization tool to view the training (y) data interactively. This will interactively help define class ranges homogeneously. Updated configuration can be used instead of original configuration in above  `train-cum-evnt` CLI.
 
 ```bash  
 pyprecip training-data-visualizer -c D:/PROJECTS/PyPrecip/examples/configs/train_cum_evnt_example.yaml  
