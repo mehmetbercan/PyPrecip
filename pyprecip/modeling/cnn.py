@@ -7,6 +7,8 @@ from .metrics import calc_metrics
 from .classes import make_class_bins, to_class_indices
 from .datasets import load_station_inputs
 import pickle
+import yaml
+import json
 
 def train_cnn(cfg):
     wanted_cols = cfg.feature_cols
@@ -70,6 +72,22 @@ def train_cnn(cfg):
                 f.write(pkg + '\n')
     except Exception:
         pass
+    # Save training data
+    conf_yaml_path = os.path.join(hist_dir, f'config_st{cfg.target_station}_1h.yaml')
+    with open(conf_yaml_path, "w", encoding="utf-8") as f:
+        yaml.dump(cfg, f, sort_keys=False, allow_unicode=True)
+    X_train_path = os.path.join(hist_dir, f'X_train_st{cfg.target_station}_1h.json')
+    with open(X_train_path, "w") as f: json.dump(X_train.tolist(), f)
+    X_val_path = os.path.join(hist_dir, f'X_val_st{cfg.target_station}_1h.json')
+    with open(X_val_path, "w") as f: json.dump(X_val.tolist(), f)
+    X_test_path = os.path.join(hist_dir, f'X_test_st{cfg.target_station}_1h.json')
+    with open(X_test_path, "w") as f: json.dump(X_test.tolist(), f)
+    y_train_path = os.path.join(hist_dir, f'y_train_st{cfg.target_station}_1h.json')
+    with open(y_train_path, "w") as f: json.dump(y_train.tolist(), f)
+    y_val_path = os.path.join(hist_dir, f'y_val_st{cfg.target_station}_1h.json')
+    with open(y_val_path, "w") as f: json.dump(y_val.tolist(), f)
+    y_test_path = os.path.join(hist_dir, f'y_test_st{cfg.target_station}_1h.json')
+    with open(y_test_path, "w") as f: json.dump(y_test.tolist(), f)
 
     # Evaluate
     y_prob = model.predict(X_test, batch_size=1024, verbose=0)
