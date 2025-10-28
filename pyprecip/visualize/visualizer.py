@@ -399,3 +399,327 @@ def interactive_config_builder_4_create_training(organized_dir):
 
     webbrowser.open(url)
     app.run(debug=True, port=port, use_reloader=False)
+
+
+
+
+
+def interactive_training_data_visualizer(cfg):
+    """
+    Interactive Dash app to explore and re-bin training/validation/test targets
+    with editable *continuous* class intervals.
+    Shows a table with sample counts for train/val/test per class.
+    """
+
+    import numpy as np
+    import os, signal, time, threading, webbrowser, flask, yaml
+    from pathlib import Path
+    import plotly.graph_objects as go
+    from dash import Dash, html, dcc, Input, Output, State
+    from dash.dependencies import ALL
+    from pyprecip.modeling.cnn import _get_training_data
+
+    # -------------------------------------------------------------
+    # Helpers
+    # -------------------------------------------------------------
+    def save_yaml_config(cfg_obj, intervals):
+        cfg_obj.class_intervals = intervals
+        model_dir = getattr(cfg_obj, "model_dir", os.getcwd())
+        save_path = Path(model_dir, "updated_cfg.yaml").as_posix()
+        try:
+            with open(save_path, "w", encoding="utf-8") as f:
+                yaml.dump(cfg_obj, f, sort_keys=False)
+            return f"✅ Configuration saved to: {save_path}"
+        except Exception as e:
+            return f"⚠️ Could not save configuration: {e}"
+
+    def load_target_data(cfg_obj):
+        try:
+            Xtr, Xv, Xte, ytr, yv, yte, ncls, means = _get_training_data(cfg_obj)
+            return {
+                "train": np.array(ytr),
+                "val": np.array(yv),
+                "test": np.array(yte)
+            }, ncls, means
+        except Exception as e:
+            print(f"⚠️ Data load failed: {e}")
+            return {"train": np.array([]), "val": np.array([]), "test": np.array([])}, 0, None
+
+    def compute_sample_counts(y_dict):
+        """Create a small HTML table showing sample counts per class."""
+        if not any(len(v) for v in y_dict.values()):
+            return html.Div("No data available.")
+
+        unique_all = sorted(set(np.concatenate([np.unique(v) for v in y_dict.values()])))
+        header = html.Tr([
+            html.Th("Class"), html.Th("Train", style={"text-align": "right"}),
+            html.Th("Val", style={"text-align": "right"}),
+            html.Th("Test", style={"text-align": "right"}),
+        ])
+        rows = [header]
+        for cls in unique_all:
+            train_c = np.sum(y_dict["train"] == cls)
+            val_c = np.sum(y_dict["val"] == cls)
+            test_c = np.sum(y_dict["test"] == cls)
+            rows.append(html.Tr([
+                html.Td(str(cls)),
+                html.Td(f"{train_c:,}", style={"text-align": "right"}),
+                html.Td(f"{val_c:,}", style={"text-align": "right"}),
+                html.Td(f"{test_c:,}", style={"text-align": "right"}),
+            ]))
+        return html.Table(rows, style={
+            "border-collapse": "collapse", "width": "100%",
+            "margin-top": "10px", "border": "1px solid #ccc",
+        })
+
+    # -------------------------------------------------------------
+    # Load data
+    # -------------------------------------------------------------
+    y_dict, n_classes, class_means = load_target_data(cfg)
+    class_intervals = [list(i) for i in cfg.class_intervals]
+
+    app = Dash(__name__)
+    app.title = "Training / Validation / Test Data Visualizer"
+
+    # interval editor builder
+    def make_interval_inputs(intervals):
+        items = []
+        for i, (low, high) in enumerate(intervals):
+            items.append(
+                html.Tr([
+                    html.Td(f"Class {i}"),
+                    html.Td(dcc.Input(
+                        id={"type": "low", "index": i},
+                        type="number", value=low, step=0.1,
+                        debounce=True, style={"width": "80px"})),
+                    html.Td("–"),
+                    html.Td(dcc.Input(
+                        id={"type": "high", "index": i},
+                        type="number", value=high, step=0.1,
+                        debounce=True, style={"width": "80px"}))
+                ])
+            )
+        return html.Table(items, style={"margin-bottom": "10px"})
+
+    # -------------------------------------------------------------
+    # LAYOUT (Plot first, Intervals + Table below)
+    # -------------------------------------------------------------
+    app.layout = html.Div([
+
+        html.H2("📊 Interactive Training Data Visualizer"),
+
+        # dataset + visualization selectors
+        html.Div([
+            html.Div([
+                html.Label("Select Dataset:"),
+                dcc.Dropdown(
+                    id="data-dropdown",
+                    options=[
+                        {"label": "Train", "value": "train"},
+                        {"label": "Validation", "value": "val"},
+                        {"label": "Test", "value": "test"},
+                    ],
+                    value="train",
+                    clearable=False,
+                    style={"width": "45%", "margin-bottom": "20px"},
+                ),
+            ]),
+            html.Div([
+                html.Label("Select Visualization Type:"),
+                dcc.Dropdown(
+                    id="vis-type",
+                    options=[
+                        {"label": "Scatter Plot", "value": "scatter"},
+                        {"label": "Bar Chart", "value": "bar"},
+                    ],
+                    value="bar",
+                    clearable=False,
+                    style={"width": "40%", "margin-bottom": "20px"},
+                ),
+            ]),
+        ]),
+
+        html.Hr(),
+        html.Div(id="plot-description", style={
+            "margin-bottom": "10px", "font-style": "italic", "color": "#555",
+        }),
+        dcc.Graph(id="main-graph"),  # <---- plot comes before intervals
+
+        html.Hr(),
+        html.H4("🎯 Class Intervals & Sample Counts"),
+
+        # intervals + table BELOW the plot
+        html.Div([
+            html.Div([
+                html.H5("Editable Intervals"),
+                html.Div(id="intervals-container", children=make_interval_inputs(class_intervals)),
+            ], style={"display": "inline-block", "verticalAlign": "top",
+                      "width": "45%", "margin-right": "3%"}),
+
+            html.Div([
+                html.H5("Sample Count per Class"),
+                html.Div(id="sample-table", children=compute_sample_counts(y_dict)),
+            ], style={"display": "inline-block", "verticalAlign": "top", "width": "45%"})
+        ]),
+
+        html.Div([
+            html.Button("🔄 Update Classes", id="update-btn",
+                        style={"margin-top": "10px", "background-color": "#27ae60",
+                               "color": "white", "font-size": "14px", "margin-right": "12px"}),
+            html.Button("💾 Save Configuration", id="save-btn",
+                        style={"margin-top": "10px", "background-color": "#2980b9",
+                               "color": "white", "font-size": "14px"}),
+        ]),
+        html.Div(id="update-msg", style={"margin-top": "8px", "color": "green"}),
+        html.Div(id="save-msg", style={"margin-top": "4px", "color": "dodgerblue"}),
+
+        html.Hr(),
+        html.Button("🛑 Stop Server", id="stop-server-btn", n_clicks=0,
+                    style={"font-size": "16px", "background-color": "#c0392b", "color": "white"}),
+        html.Div(id="stop-msg", style={"margin-top": "10px", "font-weight": "bold"}),
+
+    ], style={"margin": "40px"})
+
+    # -------------------------------------------------------------
+    # Keep intervals continuous
+    # -------------------------------------------------------------
+    @app.callback(
+        Output({"type": "low", "index": ALL}, "value"),
+        Input({"type": "high", "index": ALL}, "value"),
+        State({"type": "low", "index": ALL}, "value"),
+        prevent_initial_call=True,
+    )
+    def keep_continuous(highs, lows):
+        updated = list(lows)
+        for i in range(len(lows) - 1):
+            if highs[i] is not None:
+                updated[i + 1] = highs[i]
+        return updated
+
+    # -------------------------------------------------------------
+    # Update intervals → refresh data + sample table
+    # -------------------------------------------------------------
+    @app.callback(
+        Output("update-msg", "children"),
+        Output("sample-table", "children"),
+        Input("update-btn", "n_clicks"),
+        State({"type": "low", "index": ALL}, "value"),
+        State({"type": "high", "index": ALL}, "value"),
+        prevent_initial_call=True,
+    )
+    def update_intervals(n_clicks, lows, highs):
+        nonlocal y_dict, class_intervals, n_classes, class_means, cfg
+        intervals = [[l, h] for l, h in zip(lows, highs) if l is not None and h is not None]
+        if not intervals:
+            return "⚠️ Invalid intervals.", compute_sample_counts(y_dict)
+
+        # ensure continuity & expand last bin to max value if needed
+        max_y_val = 0
+        for key in ("train", "val", "test"):
+            if len(y_dict[key]) > 0:
+                max_y_val = max(max_y_val, float(np.max(y_dict[key])))
+        if intervals[-1][1] < max_y_val:
+            intervals[-1][1] = max_y_val
+
+        cfg.class_intervals = intervals
+        class_intervals = intervals
+        y_dict, n_classes, class_means = load_target_data(cfg)
+        return (f"✅ Updated & recalculated y sets ({len(intervals)} classes).",
+                compute_sample_counts(y_dict))
+
+    # -------------------------------------------------------------
+    # Save configuration
+    # -------------------------------------------------------------
+    @app.callback(
+        Output("save-msg", "children"),
+        Input("save-btn", "n_clicks"),
+        State({"type": "low", "index": ALL}, "value"),
+        State({"type": "high", "index": ALL}, "value"),
+        prevent_initial_call=True,
+    )
+    def save_config(n_clicks, lows, highs):
+        intervals = [[l, h] for l, h in zip(lows, highs)
+                     if l is not None and h is not None]
+        return save_yaml_config(cfg, intervals)
+
+    # -------------------------------------------------------------
+    # Plot section
+    # -------------------------------------------------------------
+    @app.callback(
+        Output("main-graph", "figure"),
+        Input("data-dropdown", "value"),
+        Input("vis-type", "value"),
+        Input("update-btn", "n_clicks"),
+    )
+    def update_plot(selected_set, vis_type, _):
+        y = np.array(y_dict[selected_set])
+        if y.size == 0:
+            return go.Figure().add_annotation(
+                text="No data", x=0.5, y=0.5, showarrow=False
+            )
+
+        if vis_type == "scatter":
+            fig = go.Figure(go.Scattergl(
+                x=np.arange(len(y)), y=y,
+                mode="markers",
+                marker=dict(size=3, color=y, colorscale="Viridis", opacity=0.6),
+            ))
+            fig.update_layout(
+                title=f"Scatter Plot — {selected_set.capitalize()} Set",
+                xaxis_title="Sample Index", yaxis_title="Target Value",
+                template="plotly_white"
+            )
+            return fig
+
+        unique, counts = np.unique(y, return_counts=True)
+        mean_count, std_dev = np.mean(counts), np.std(counts)
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=[str(u) for u in unique], y=counts,
+                             marker_color="mediumseagreen"))
+        fig.add_shape(
+            type="line",
+            x0=-0.5, x1=len(unique)-0.5,
+            y0=mean_count, y1=mean_count,
+            line=dict(color="red", dash="dash")
+        )
+        fig.update_layout(
+            title=f"Class Distribution — {selected_set.capitalize()} Set",
+            xaxis_title="Class", yaxis_title="Sample Count",
+            template="plotly_white"
+        )
+        return fig
+
+    # -------------------------------------------------------------
+    # Stop server
+    # -------------------------------------------------------------
+    @app.callback(
+        Output("stop-msg", "children"),
+        Input("stop-server-btn", "n_clicks"),
+        prevent_initial_call=True,
+    )
+    def stop_server(n_clicks):
+        func = flask.request.environ.get("werkzeug.server.shutdown")
+
+        def kill_self():
+            time.sleep(1.5)
+            os.kill(os.getpid(), signal.SIGTERM)
+        if func is None:
+            threading.Thread(target=kill_self).start()
+            return "🛑 Forcing shutdown..."
+        def delayed_shutdown():
+            time.sleep(1.5)
+            func()
+        threading.Thread(target=delayed_shutdown).start()
+        return "🛑 Shutting down server..."
+
+    # -------------------------------------------------------------
+    # Run server
+    # -------------------------------------------------------------
+    port = 8062
+    url = f"http://127.0.0.1:{port}"
+    print(f"\n🚀 Visualizer Ready\n→ {url}\nPress CTRL+C to stop.\n")
+    webbrowser.open(url)
+    app.run(debug=True, port=port, use_reloader=False)
+
+
+

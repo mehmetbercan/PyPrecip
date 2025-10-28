@@ -8,35 +8,13 @@ from .classes import make_class_bins, to_class_indices
 from .datasets import load_station_inputs
 import pickle
 import yaml
-import json
+# import json
 
 def train_cnn(cfg):
-    wanted_cols = cfg.feature_cols
-    base_dir = cfg.inputs_dir
-
-    df = load_station_inputs(cfg.stations, base_dir, cfg.train_col, [c for c in wanted_cols if c != cfg.train_col])
-
-    input_cols = [f'{col}_{st}' for st in cfg.stations for col in wanted_cols]
-    X = df[input_cols].values.astype(float)
-
-    # target: t+1h of train_col in target station
-    y = df[f"{cfg.train_col}_{cfg.target_station}"].shift(-1)
-    valid = ~y.isna()
-    X = X[valid.values]
-    y = y[valid]
-
-    # classes
-    intervals = cfg.class_intervals
-    bin_edges, class_means = make_class_bins(intervals)
-    y_cls, mask = to_class_indices(y, bin_edges)
-    X = X[mask.values]
-    n_classes = len(intervals)
-
-    X_train, X_temp, y_train, y_temp = train_test_split(X, y_cls, test_size=0.2, shuffle=True, random_state=42)
-    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, shuffle=True, random_state=42)
+    X_train, X_val, X_test, y_train, y_val, y_test, n_classes, class_means = _get_training_data(cfg)
 
     model = models.Sequential([
-        layers.Input(shape=(X.shape[1],)),
+        layers.Input(shape=(X_train.shape[1],)),
         layers.Dense(cfg.hidden_units, activation="tanh"),
         layers.Dense(n_classes, activation="softmax")
     ])
@@ -76,21 +54,48 @@ def train_cnn(cfg):
     conf_yaml_path = os.path.join(hist_dir, f'config_st{cfg.target_station}_1h.yaml')
     with open(conf_yaml_path, "w", encoding="utf-8") as f:
         yaml.dump(cfg, f, sort_keys=False, allow_unicode=True)
-    X_train_path = os.path.join(hist_dir, f'X_train_st{cfg.target_station}_1h.json')
-    with open(X_train_path, "w") as f: json.dump(X_train.tolist(), f)
-    X_val_path = os.path.join(hist_dir, f'X_val_st{cfg.target_station}_1h.json')
-    with open(X_val_path, "w") as f: json.dump(X_val.tolist(), f)
-    X_test_path = os.path.join(hist_dir, f'X_test_st{cfg.target_station}_1h.json')
-    with open(X_test_path, "w") as f: json.dump(X_test.tolist(), f)
-    y_train_path = os.path.join(hist_dir, f'y_train_st{cfg.target_station}_1h.json')
-    with open(y_train_path, "w") as f: json.dump(y_train.tolist(), f)
-    y_val_path = os.path.join(hist_dir, f'y_val_st{cfg.target_station}_1h.json')
-    with open(y_val_path, "w") as f: json.dump(y_val.tolist(), f)
-    y_test_path = os.path.join(hist_dir, f'y_test_st{cfg.target_station}_1h.json')
-    with open(y_test_path, "w") as f: json.dump(y_test.tolist(), f)
+    # X_train_path = os.path.join(hist_dir, f'X_train_st{cfg.target_station}_1h.json')
+    # with open(X_train_path, "w") as f: json.dump(X_train.tolist(), f)
+    # X_val_path = os.path.join(hist_dir, f'X_val_st{cfg.target_station}_1h.json')
+    # with open(X_val_path, "w") as f: json.dump(X_val.tolist(), f)
+    # X_test_path = os.path.join(hist_dir, f'X_test_st{cfg.target_station}_1h.json')
+    # with open(X_test_path, "w") as f: json.dump(X_test.tolist(), f)
+    # y_train_path = os.path.join(hist_dir, f'y_train_st{cfg.target_station}_1h.json')
+    # with open(y_train_path, "w") as f: json.dump(y_train.tolist(), f)
+    # y_val_path = os.path.join(hist_dir, f'y_val_st{cfg.target_station}_1h.json')
+    # with open(y_val_path, "w") as f: json.dump(y_val.tolist(), f)
+    # y_test_path = os.path.join(hist_dir, f'y_test_st{cfg.target_station}_1h.json')
+    # with open(y_test_path, "w") as f: json.dump(y_test.tolist(), f)
 
     # Evaluate
     y_prob = model.predict(X_test, batch_size=1024, verbose=0)
     y_pred_cls = y_prob.argmax(axis=1)
     metrics = calc_metrics(y_test, y_pred_cls, class_means)
     return model_path, metrics
+
+def _get_training_data(cfg):
+    wanted_cols = cfg.feature_cols
+    base_dir = cfg.inputs_dir
+
+    df = load_station_inputs(cfg.stations, base_dir, cfg.train_col, [c for c in wanted_cols if c != cfg.train_col])
+
+    input_cols = [f'{col}_{st}' for st in cfg.stations for col in wanted_cols]
+    X = df[input_cols].values.astype(float)
+
+    # target: t+1h of train_col in target station
+    y = df[f"{cfg.train_col}_{cfg.target_station}"].shift(-1)
+    valid = ~y.isna()
+    X = X[valid.values]
+    y = y[valid]
+
+    # classes
+    intervals = cfg.class_intervals
+    bin_edges, class_means = make_class_bins(intervals)
+    y_cls, mask = to_class_indices(y, bin_edges)
+    X = X[mask.values]
+    n_classes = len(intervals)
+
+    X_train, X_temp, y_train, y_temp = train_test_split(X, y_cls, test_size=0.2, shuffle=True, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, shuffle=True, random_state=42)
+
+    return X_train, X_val, X_test, y_train, y_val, y_test, n_classes, class_means

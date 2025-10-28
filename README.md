@@ -58,6 +58,13 @@ Use the following command to train a model optimized for event-based input data 
 ```bash 
 pyprecip train-cum-evnt -c examples/configs/train_cum_evnt_example.yaml  
 ```
+#### 3.1) Interactive training data visualizer and class ranges updater
+
+You can launch the visualization tool to view the training (y) data interactively. This will interactively help define class ranges homogeneously. Updated configuration can be used instead of original configuration in above train-cum-evnt CLI.
+
+```bash  
+pyprecip training-data-visualizer -c D:/PROJECTS/PyPrecip/examples/configs/train_cum_evnt_example.yaml  
+```
 
 
 
