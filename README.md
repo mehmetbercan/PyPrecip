@@ -16,7 +16,7 @@ It provides tools to **download**, **process**, and **model** precipitation data
 - 📥  Data downloaders (_coming soon_)  
 - 🧹  Preprocessing and feature‑engineering pipelines  
 - 🧠  Baseline and advanced AI models for nowcasting  
-- 📈  Forecasting models → (planned)  
+- 📈  Forecasting models(_planned_)  
 - 🧪  Evaluation metrics, visualization, and interactive tools  
 
 ---
