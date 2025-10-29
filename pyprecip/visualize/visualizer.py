@@ -1,20 +1,40 @@
-from pathlib import Path
+# =============================
+# Standard Library Imports
+# =============================
+import base64
 import json
-import yaml
-import dash
-from dash import dcc, html, Input, Output, State, MATCH, ALL
-import plotly.graph_objects as go
-import pandas as pd
-import webbrowser
-import flask
+import math
+import os
+import pickle
+import signal
 import threading
 import time
-import os
-import signal
-import missingno as msno
-import matplotlib.pyplot as plt
 from io import BytesIO
-import base64
+from pathlib import Path
+
+# =============================
+# Third-Party Library Imports
+# =============================
+import dash
+from dash import Dash, dcc, html, Input, Output, State
+from dash.dependencies import ALL, MATCH
+import flask
+import matplotlib.pyplot as plt
+import missingno as msno
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error
+import tensorflow as tf
+import yaml
+import webbrowser
+
+# =============================
+# Project-Specific Imports
+# =============================
+from pyprecip.modeling.cnn import _get_training_data
+from pyprecip.modeling.metrics import calc_metrics
 
 def fig_to_base64():
     """Convert current Matplotlib figure to base64 image for Dash display."""
@@ -411,13 +431,7 @@ def interactive_training_data_visualizer(cfg):
     Shows a table with sample counts for train/val/test per class.
     """
 
-    import numpy as np
-    import os, signal, time, threading, webbrowser, flask, yaml
-    from pathlib import Path
-    import plotly.graph_objects as go
-    from dash import Dash, html, dcc, Input, Output, State
-    from dash.dependencies import ALL
-    from pyprecip.modeling.cnn import _get_training_data
+    os.makedirs(cfg.model_dir, exist_ok=True)
 
     # -------------------------------------------------------------
     # Helpers
@@ -722,4 +736,267 @@ def interactive_training_data_visualizer(cfg):
     app.run(debug=True, port=port, use_reloader=False)
 
 
+
+
+
+def trained_aimodel_visualizer(cfg):
+    """
+    Launch an interactive Dash app for visualizing a trained AI model,
+    its training history, and performance metrics using test data.
+    """
+
+    # ------------------------------------------------------------------------------------------
+    # Load datasets
+    # ------------------------------------------------------------------------------------------
+    print("Loading training data via _get_training_data(cfg)...")
+    Xtr, Xv, Xte, ytr, yv, yte, n_classes, class_means = _get_training_data(cfg)
+    X_test, y_test = Xte, yte
+    target_station = cfg.target_station
+
+    # ------------------------------------------------------------------------------------------
+    # Resolve model and history paths
+    # ------------------------------------------------------------------------------------------
+    model_path = os.path.join(cfg.model_dir, f"NowcastMdl_st{target_station}_1h.keras")
+    hist_dir = os.path.join(cfg.model_dir, "histories")
+    hist_path = os.path.join(hist_dir, f"NowcastMdl_st{target_station}_1h.pckl")
+
+    print(f"Loading model from: {model_path}")
+    model = tf.keras.models.load_model(model_path)
+
+    print(f"Loading history from: {hist_path}")
+    with open(hist_path, "rb") as f:
+        history = pickle.load(f)
+
+    # ------------------------------------------------------------------------------------------
+    # Evaluate model
+    # ------------------------------------------------------------------------------------------
+    print("Evaluating model…")
+    y_prob = model.predict(X_test, batch_size=1024, verbose=0)
+    y_pred_cls = y_prob.argmax(axis=1)
+
+    acc = accuracy_score(y_test, y_pred_cls)
+    y_true_mm = np.array([class_means[c] for c in y_test])
+    y_pred_mm = np.array([class_means[c] for c in y_pred_cls])
+    rmse = math.sqrt(mean_squared_error(y_true_mm, y_pred_mm))
+
+    cm = confusion_matrix(y_test, y_pred_cls, labels=range(n_classes))
+    row_sums = cm.sum(axis=1, keepdims=True)
+    row_sums[row_sums == 0] = 1
+    cm_percent = cm.astype(float) / row_sums * 100
+
+    metrics = calc_metrics(y_test, y_pred_cls, class_means)
+    print(f"\nStation {target_station} — Accuracy: {acc:.3f}, RMSE (mm): {rmse:.3f}")
+
+    # ------------------------------------------------------------------------------------------
+    # Build Dash App
+    # ------------------------------------------------------------------------------------------
+    app = dash.Dash(__name__)
+    app.title = f"PyPrecip AI Model Visualizer — Station {target_station}"
+
+    faded_style = {
+        "font-size": "13px",
+        "color": "rgba(80, 80, 80, 0.7)",
+        "margin-top": "8px",
+        "font-style": "italic"
+    }
+
+    # Order metrics logically if possible
+    ordered_keys = ["ACC", "RMSE", "RSE", "POD", "FAR", "CSI"]
+    metric_items = [(k, metrics[k]) for k in ordered_keys if k in metrics]
+
+    app.layout = html.Div([
+        html.H2(f"📊 PyPrecip AI Model Visualizer — Station {target_station}",
+                style={'textAlign': 'center'}),
+
+        # --- Performance Summary ---
+        html.Div([
+            html.H4("Performance Summary (on Test Data)"),
+            html.Ul([html.Li(f"{k}: {v:.3f}") for k, v in metric_items]),
+            html.Div([
+                html.P("Definitions of performance metrics:",
+                       style={"marginBottom": "4px", "font-weight": "bold"}),
+                html.Ul([
+                    html.Li("ACC — Accuracy: fraction of correctly predicted rainfall categories out of all test samples; measures overall classification success."),
+                    html.Li("RMSE — Root Mean Square Error: magnitude of average deviation (mm) between predicted and observed mean rainfall; smaller values reflect higher precision."),
+                    html.Li("RSE — Relative Squared Error: total squared prediction error normalized by the observed variance; lower values show better variance fitting and model efficiency."),
+                    html.Li("POD — Probability of Detection: fraction of actual rainfall events successfully predicted (sensitivity)."),
+                    html.Li("FAR — False Alarm Ratio: fraction of predicted rainfall events that did not occur (false alerts); low FAR means reliable detection."),
+                    html.Li("CSI — Critical Success Index: unified event-based skill combining hits, misses, and false alarms; higher CSI indicates stronger overall event‑forecast ability.")
+                ], style=faded_style)
+            ])
+        ], style={'marginBottom': 45, 'marginTop': 20}),
+
+        # --- Accuracy and Loss History ---
+        html.Div([
+            html.Div([
+                dcc.Graph(
+                    id='accuracy-history',
+                    figure=go.Figure([
+                        go.Scatter(y=history['sparse_categorical_accuracy'], mode='lines', name='Train Accuracy'),
+                        go.Scatter(y=history['val_sparse_categorical_accuracy'], mode='lines', name='Validation Accuracy')
+                    ]).update_layout(title="Accuracy History", xaxis_title="Epoch", yaxis_title="Accuracy")
+                ),
+                html.Div(
+                    "Tracks model accuracy throughout training. "
+                    "Convergence of both training and validation curves indicates stable learning; "
+                    "large separation signals overfitting or data imbalance.",
+                    style=faded_style
+                )
+            ], style={'width': '48%', 'display': 'inline-block'}),
+
+            html.Div([
+                dcc.Graph(
+                    id='loss-history',
+                    figure=go.Figure([
+                        go.Scatter(y=history['loss'], mode='lines', name='Train Loss'),
+                        go.Scatter(y=history['val_loss'], mode='lines', name='Validation Loss')
+                    ]).update_layout(title="Loss History", xaxis_title="Epoch", yaxis_title="Loss")
+                ),
+                html.Div(
+                    "Depicts error reduction during optimization. "
+                    "Declining and converging curves denote effective model generalization.",
+                    style=faded_style
+                )
+            ], style={'width': '48%', 'display': 'inline-block', 'marginLeft': '4%'}),
+        ], style={'marginBottom': 50}),
+
+        html.Hr(),
+
+        # --- Confusion Matrices ---
+        html.Div([
+            html.Div([
+                html.H4("Confusion Matrix (Counts, Test Data)"),
+                dcc.Graph(
+                    id='cm-counts',
+                    figure=px.imshow(
+                        cm,
+                        x=[f"Pred {i}" for i in range(n_classes)],
+                        y=[f"True {i}" for i in range(n_classes)],
+                        text_auto=True,
+                        color_continuous_scale="Blues",
+                        title="Confusion Matrix (Counts, Test Data)",
+                        aspect="auto"
+                    )
+                ),
+                html.Div(
+                    "Displays number of test samples per actual vs predicted class. "
+                    "Ideally, most predictions concentrate along the diagonal (correct classification).",
+                    style=faded_style
+                )
+            ], style={'width': '48%', 'display': 'inline-block'}),
+
+            html.Div([
+                html.H4("Confusion Matrix (% per True Class, Test Data)"),
+                dcc.Graph(
+                    id='cm-percent',
+                    figure=px.imshow(
+                        cm_percent,
+                        x=[f"Pred {i}" for i in range(n_classes)],
+                        y=[f"True {i}" for i in range(n_classes)],
+                        text_auto=".0f",
+                        color_continuous_scale="Blues",
+                        title="Confusion Matrix (% per True Class, Test Data)",
+                        aspect="auto"
+                    )
+                ),
+                html.Div(
+                    "Normalized representation of classification accuracy by true class for test data. "
+                    "Diagonal percentages near 100 % indicate higher category‑specific skill.",
+                    style=faded_style
+                )
+            ], style={'width': '48%', 'display': 'inline-block', 'marginLeft': '4%'}),
+        ], style={'marginBottom': 50, 'marginTop': 20}),
+
+        html.Hr(),
+
+        # --- Probability explorer ---
+        html.H4("Prediction Probability Explorer (Test Data)"),
+        dcc.Slider(0, len(y_test) - 50, 10, value=0, id='sample-slider',
+                   marks=None, tooltip={"placement": "bottom"}),
+        dcc.Graph(id='heatmap-preds'),
+        html.Div(
+            "Displays predicted probability distributions for subsets of the test dataset. "
+            "Rows correspond to individual samples, columns to prediction classes. "
+            "Brighter cells signal higher confidence; the green ✓ marks the true class.",
+            style=faded_style
+        ),
+
+        html.Hr(),
+        html.Button(
+            "🛑 Stop Server",
+            id="stop-server-btn",
+            n_clicks=0,
+            style={
+                "font-size": "16px",
+                "background-color": "#c0392b",
+                "color": "white",
+                "margin-top": "20px"
+            }
+        ),
+        html.Div(id="stop-msg", style={"margin-top": "10px", "font-weight": "bold"})
+    ])
+
+    # ------------------------------------------------------------------------------------------
+    # Callback to update subset heatmap dynamically
+    # ------------------------------------------------------------------------------------------
+    @app.callback(
+        Output('heatmap-preds', 'figure'),
+        Input('sample-slider', 'value')
+    )
+    def update_heatmap(start_idx):
+        n_show = 30
+        end_idx = min(start_idx + n_show, len(y_test))
+        subset_probs = y_prob[start_idx:end_idx]
+
+        fig = px.imshow(
+            subset_probs,
+            color_continuous_scale="Blues",
+            aspect="auto",
+            title=f"Predicted Probability Distribution (Samples {start_idx}-{end_idx}, Test Data)"
+        )
+
+        for j, i in enumerate(range(start_idx, end_idx)):
+            fig.add_annotation(
+                x=y_test[i],
+                y=j,
+                text="✓",
+                showarrow=False,
+                font=dict(color="lime", size=12, family="Arial Black")
+            )
+        return fig
+
+    # ------------------------------------------------------------------------------------------
+    # Safe shutdown
+    # ------------------------------------------------------------------------------------------
+    @app.callback(
+        Output("stop-msg", "children"),
+        Input("stop-server-btn", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def stop_server(n_clicks):
+        func = flask.request.environ.get("werkzeug.server.shutdown")
+
+        def kill_self():
+            time.sleep(1.5)
+            os.kill(os.getpid(), signal.SIGTERM)
+
+        if func is None:
+            threading.Thread(target=kill_self).start()
+            return "🛑 Forcing shutdown (non‑Werkzeug environment)..."
+
+        def delayed_shutdown():
+            time.sleep(1.5)
+            func()
+
+        threading.Thread(target=delayed_shutdown).start()
+        return "🛑 Shutting down server..."
+
+    # ------------------------------------------------------------------------------------------
+    # Launch Dash server
+    # ------------------------------------------------------------------------------------------
+    port = 8050
+    url = f"http://127.0.0.1:{port}"
+    print(f"\n🚀 Starting PyPrecip visualizer at {url}\nPress CTRL+C to stop manually.\n")
+    webbrowser.open(url)
+    app.run(debug=True, port=port, use_reloader=False)
 

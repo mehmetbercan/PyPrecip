@@ -93,6 +93,24 @@ Once intervals are updated, you can reuse the new YAML configuration from this t
 pyprecip training-data-visualizer -c D:/PROJECTS/PyPrecip/examples/configs/train_cum_evnt_example.yaml
 ```
 
+#### 🎨 3.2 Interactive AI Model Visualizer
+
+Use the interactive visualizer to explore your trained AI model, review performance metrics, and understand its behavior.
+
+```bash  
+pyprecip trained-aimodel-visualizer -c D:/PROJECTS/PyPrecip/examples/configs/train_cum_evnt_example.yaml  
+```
+
+This command loads the trained model, its recorded training history, and the test dataset defined in the configuration file.  
+The **Dash-based** web interface provides an intuitive environment to analyze model performance.
+
+**Within the visualizer, you can:**
+
+- Review **key performance metrics** (`ACC`, `RMSE`, `RSE`, `POD`, `FAR`, `CSI`) calculated on test data.  
+- Inspect **training and validation accuracy/loss** curves to assess learning stability.  
+- Examine **confusion matrices (counts and percentage, test data)** to evaluate prediction accuracy across rainfall categories.  
+- Explore the **prediction probability explorer (test data)** to visualize confidence levels and identify common misclassification patterns.
+
 ---
 
 ## 🧠 Notes
