@@ -50,6 +50,7 @@ class CreateTrainingConfig:
     short_cols: List[str]
     cols: List[str]
 
+    time_step: int # time step in minutes
     mit_cold_hours: int
     mit_warm_hours: int
     global_event_buffer_hours: int

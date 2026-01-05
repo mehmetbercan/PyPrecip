@@ -71,10 +71,12 @@ class TrainingDataCreator:
                   .agg(
                       start=("pcp_unit", lambda x: x.index.min()),
                       end=("pcp_unit",   lambda x: x.index.max()),
-                      duration=("pcp_unit", "count"),
                       total_precip=("pcp_unit", "sum")
                   )
             )
+            # Calculate duration as time difference in hours
+            ev_info['duration'] = (ev_info['end'] - ev_info['start']).dt.total_seconds() / 3600 + \
+                                  self.cfg.time_step / 60
 
             # remove small events
             to_nan = []
@@ -96,11 +98,13 @@ class TrainingDataCreator:
                   .agg(
                       start=("pcp_unit", lambda x: x.index.min()),
                       end=("pcp_unit",   lambda x: x.index.max()),
-                      duration=("pcp_unit", "count"),
                       total_precip=("pcp_unit", "sum")
                   )
             ).reset_index(drop=True)
             ev_info.index = range(1, len(ev_info)+1)
+            # Calculate duration as time difference in hours
+            ev_info['duration'] = (ev_info['end'] - ev_info['start']).dt.total_seconds() / 3600 + \
+                                  self.cfg.time_step / 60
 
             station_df[st] = df
             station_events[st] = ev_info
@@ -113,7 +117,6 @@ class TrainingDataCreator:
             d['station'] = st
             all_events.append(d)
         df_stnevents = pd.concat(all_events).sort_values("start").reset_index(drop=True)
-
         # assign global ids
         global_event = 0
         global_ids = []
@@ -149,7 +152,7 @@ class TrainingDataCreator:
             for _, row in df_globalsummary.iterrows():
                 ev = int(row["global_event"])
                 start, end = row["new_start"], row["new_end"]
-                full_index = pd.date_range(start, end, freq="h")
+                full_index = pd.date_range(start, end, freq=f"{self.cfg.time_step}min")
                 temp = df.loc[start:end].reindex(full_index)
                 temp["pcp_unit"] = temp["pcp_unit"].fillna(0)
                 temp["cum_pcp"] = temp["pcp_unit"].cumsum()
