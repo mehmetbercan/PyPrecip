@@ -756,9 +756,9 @@ def trained_aimodel_visualizer(cfg):
     # ------------------------------------------------------------------------------------------
     # Resolve model and history paths
     # ------------------------------------------------------------------------------------------
-    model_path = os.path.join(cfg.model_dir, f"NowcastMdl_st{target_station}_1h.keras")
+    model_path = os.path.join(cfg.model_dir, f"NowcastMdl_st{target_station}_timestp{cfg.forecast_horizon_in_time_steps}.keras")
     hist_dir = os.path.join(cfg.model_dir, "histories")
-    hist_path = os.path.join(hist_dir, f"NowcastMdl_st{target_station}_1h.pckl")
+    hist_path = os.path.join(hist_dir, f"NowcastMdl_st{target_station}_timestp{cfg.forecast_horizon_in_time_steps}.pckl")
 
     print(f"Loading model from: {model_path}")
     model = tf.keras.models.load_model(model_path)

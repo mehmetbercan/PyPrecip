@@ -68,6 +68,7 @@ class CreateTrainingConfig:
 class TrainConfig:
     stations: List[int]
     target_station: int
+    forecast_horizon_in_time_steps: int
     feature_cols: List[str]
     train_col: str
     inputs_dir: str

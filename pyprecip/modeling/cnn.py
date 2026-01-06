@@ -37,9 +37,9 @@ def train_cnn(cfg):
     )
 
     # Save model and requirements
-    model_path = os.path.join(cfg.model_dir, f'NowcastMdl_st{cfg.target_station}_1h.keras')
+    model_path = os.path.join(cfg.model_dir, f'NowcastMdl_st{cfg.target_station}_timestp{cfg.forecast_horizon_in_time_steps}.keras')
     model.save(model_path, save_format='keras')
-    model_history_path = os.path.join(hist_dir, f'NowcastMdl_st{cfg.target_station}_1h.pckl')
+    model_history_path = os.path.join(hist_dir, f'NowcastMdl_st{cfg.target_station}_timestp{cfg.forecast_horizon_in_time_steps}.pckl')
     with open(model_history_path, 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
     try:
@@ -50,7 +50,7 @@ def train_cnn(cfg):
     except Exception:
         pass
     # Save training data configuration
-    conf_yaml_path = os.path.join(hist_dir, f'config_st{cfg.target_station}_1h.yaml')
+    conf_yaml_path = os.path.join(hist_dir, f'config_st{cfg.target_station}_timestp{cfg.forecast_horizon_in_time_steps}.yaml')
     with open(conf_yaml_path, "w", encoding="utf-8") as f:
         yaml.dump(cfg, f, sort_keys=False, allow_unicode=True)
 
@@ -70,7 +70,7 @@ def _get_training_data(cfg):
     X = df[input_cols].values.astype(float)
 
     # target: t+1h of train_col in target station
-    y = df[f"{cfg.train_col}_{cfg.target_station}"].shift(-1)
+    y = df[f"{cfg.train_col}_{cfg.target_station}"].shift(-1*cfg.forecast_horizon_in_time_steps)
     valid = ~y.isna()
     X = X[valid.values]
     y = y[valid]

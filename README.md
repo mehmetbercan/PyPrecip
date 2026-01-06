@@ -53,7 +53,7 @@ pytest test_cli_train_cum_evnt.py::test_train_cum_evnt_cmd
 Organize mixed precipitation data (e.g., from the Turkish State Meteorological Service) into the standard PyPrecip format:
 
 ```bash
-pyprecip organize-tr -c examples/configs/organizer_tr_example.yaml
+pyprecip organize-tr -c D:/PROJECTS/PyPrecip/examples/configs/organizer_tr_example.yaml
 ```
 
 ---
@@ -63,7 +63,7 @@ pyprecip organize-tr -c examples/configs/organizer_tr_example.yaml
 Generate **event‑based** training inputs from the organized data:
 
 ```bash
-pyprecip create-training -c examples/configs/create_training_example.yaml
+pyprecip create-training -c D:/PROJECTS/PyPrecip/examples/configs/create_training_example.yaml
 ```
 
 #### 🧭 2.1  Interactive Config Builder
@@ -81,7 +81,7 @@ pyprecip config-builder-4-create-training -i D:/PROJECTS/PyPrecip/examples/outpu
 Train a convolutional model optimized for event‑based input (architecture config in YAML):
 
 ```bash
-pyprecip train-cum-evnt -c examples/configs/train_cum_evnt_example.yaml
+pyprecip train-cum-evnt -c D:/PROJECTS/PyPrecip/examples/configs/train_cum_evnt_example.yaml
 ```
 
 #### 🎨 3.1  Interactive Training Data Visualizer
